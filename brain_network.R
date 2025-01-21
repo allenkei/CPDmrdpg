@@ -185,6 +185,11 @@ CUSUM_frobenius <- function(obj, s, e, t, rank) {
   return(diff_frobenius(P_s_t, P_t_e))
 }
 
+CUSUM_layer <- function(obj, s, e, t, rank) {
+  # Implement CUSUM layer
+}
+
+
 hat.rank <- c(15, 15, 15)
 s <- 0
 e <- 150
@@ -214,20 +219,28 @@ for(t in 2:148){
 
 plot(1:149, frobenius_holder, type='l')
 
-source("SBS.R")
 intervals <- construct_intervals(150, 1/2, 4)
 results_one <- cusum_on_intervals(CUSUM_frobenius, A.tensor, c(30, 38), rank = hat.rank)
 results_all <- cusum_on_intervals(CUSUM_frobenius, A.tensor, intervals, rank = hat.rank)
 
 # Calculate intervals & CUSUM within
-results <- seeded_binary_seg(CUSUM_frobenius, A.tensor, 150, alpha = 1/2, m = 4, 
-                             threshold = 18, method = "Narrowest", rank = hat.rank)
+# results <- seeded_binary_seg(CUSUM_frobenius, A.tensor, 150, alpha = 1/2, m = 4, 
+#                              threshold = 18, method = "Narrowest", rank = hat.rank)
 
 # Pass in CUSUM results (as a matrix) to save computation
 results <- seeded_binary_seg(CUSUM_frobenius, A.tensor, 150, CUSUM_res = results_all, 
                              threshold = c(22, 18, 16), method = "Greedy", rank = hat.rank)
-results[[2]]$results
+
+results <- seeded_binary_seg(CUSUM_frobenius, A.tensor, 150, CUSUM_res = results_all, 
+                             threshold = c(22, 18, 16), method = "Narrowest", rank = hat.rank)
+
+results[[1]]$results
+
 # Candidate Selection: 
 # Narrowest is statistically (slightly) preferred, 
 # but is computationally more expensive for multiple thresholds
 # Greedy is most efficient for multiple thresholds
+
+# We are sensitive to the endpoints
+# Do we increase m?
+# Or try other statistics first

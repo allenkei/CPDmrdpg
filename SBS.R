@@ -106,7 +106,6 @@ seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2)
   
   
   if (is.null(CUSUM_res)) {
-    print("Went in here!")
     intervals <- construct_intervals(T, alpha, m)
     results <- cusum_on_intervals(CUSUM, obj, intervals, ...)
   } else {
@@ -158,6 +157,7 @@ seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2)
     }
     return(solution_path)
   }
+  
   else if (method == "Narrowest") {
     results <- results[order(results[, 4] - results[, 3], -results[, 2]), ]
     for (band in threshold) {
