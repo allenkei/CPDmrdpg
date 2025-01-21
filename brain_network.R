@@ -244,3 +244,7 @@ results[[1]]$results
 # We are sensitive to the endpoints
 # Do we increase m?
 # Or try other statistics first
+
+# Check on m doing anticipated behavior 
+
+# Check on weights for CUSUM / SBS version of CUSUM
