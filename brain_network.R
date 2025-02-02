@@ -140,20 +140,22 @@ for(t in 2:73){
 
 plot(1:74, frobenius_holder, type='l')
 
-intervals <- construct_intervals(75, sqrt(1/2), 4)
+intervals <- construct_intervals(75, sqrt(1/2), 2)
 results_one <- cusum_on_intervals(CUSUM_step1, A.tensor.even, c(30, 38), obj.B = B.tensor.odd)
 results_all_step1 <- cusum_on_intervals(CUSUM_step1, A.tensor.even, intervals, obj.B = B.tensor.odd)
 
 
 # Calculate intervals & CUSUM within
-# results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, alpha = 1/2, m = 4, 
-#                              threshold = 18, method = "Narrowest", obj.B = B.tensor.odd)
+# results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, alpha = 1/2, m = 4,
+#                              threshold = 200, method = "Narrowest", obj.B = B.tensor.odd)
 
 # Pass in CUSUM results (as a matrix) to save computation
 results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
-                             threshold = c(200, 125, 50), method = "Greedy", obj.B = B.tensor.odd)
+                             threshold = c(1000, 500, 250, 50), method = "Narrowest", obj.B = B.tensor.odd)
+results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
+                             threshold = c(1000, 500, 250, 50), method = "Greedy", obj.B = B.tensor.odd)
 
-results[[4]]$results
+results[[2]]$results
 
 
 
