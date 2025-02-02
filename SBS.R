@@ -1,5 +1,5 @@
 
-construct_intervals <- function(T, alpha = sqrt(1/2), m = 2) {
+construct_intervals <- function(T, alpha = sqrt(1/2), m = 4) {
   layers <- ceiling(log(T, 1/alpha))
   
   # Since we flatten at the end anyway, no need to store as a list
@@ -67,11 +67,12 @@ cusum_on_intervals <- function(CUSUM, obj, intervals, ...) {
   }
   
   results <- matrix(nrow = nrow(intervals), ncol = 4)
+  print((results))
   colnames(results) = c("Candidates", "Gain", "Start", "End")
   
   for (i in 1:nrow(intervals)) {
     # Calculate candidate and maximal gain, keep s and e
-    max_gain = 0
+    max_gain = -Inf
     candidate = NULL
     
     s = intervals[i, 1]
@@ -84,7 +85,7 @@ cusum_on_intervals <- function(CUSUM, obj, intervals, ...) {
         candidate <- t
       }
     }
-    
+    print(paste0("candidate = ", t, ", max_gain = ", gain, ", s = ", s, ", e = ", e, ", interval = ", i, "."))
     results[i, ] <- c(candidate, max_gain, s, e)
   }
   
@@ -92,7 +93,7 @@ cusum_on_intervals <- function(CUSUM, obj, intervals, ...) {
   
 }
 
-seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2), m = 2, method = "Greedy", CUSUM_res = NULL, ...) {
+seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2), m = 4, method = "Greedy", CUSUM_res = NULL, ...) {
   # Method can be "Greedy" or "Narrowest"
     # Greedy selects the highest Gain over the threshold first
     # Narrowest selects shorted interval with Gain over threshold first
@@ -189,17 +190,4 @@ alpha <- sqrt(1/2)
 intervals <- construct_intervals(T, alpha, m = 4)
 print(intervals)
 plot_intervals(intervals)
-
-
-# for (band in threshold) {
-# while(i <= nrow(results) && results[i, 2] > band){
-#   print(i)
-#   if (all(index_list < results[i, 3] | index_list > results[i, 4])) {
-#     index_list <- c(index_list, i)
-#   }
-#   i <- i+1
-# }
-# subset = results[index_list, ]
-# solution_path <- c(solution_path, list(list(threshold = band, results = subset)))
-# }
 
