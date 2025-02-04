@@ -150,7 +150,7 @@ results_all_step1 <- cusum_on_intervals(CUSUM_step1, A.tensor.even, intervals, o
 
 # Pass in CUSUM results (as a matrix) to save computation
 results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
-                             threshold = c(1000, 500, 250, 50), method = "Narrowest", obj.B = B.tensor.odd)
+                             threshold = c(1800, 600, 200, 50), method = "Narrowest", obj.B = B.tensor.odd)
 results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                              threshold = c(1000, 500, 250, 50), method = "Greedy", obj.B = B.tensor.odd)
 
