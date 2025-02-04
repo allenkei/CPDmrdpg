@@ -72,7 +72,7 @@ cusum_on_intervals <- function(CUSUM, obj, intervals, ...) {
   
   for (i in 1:nrow(intervals)) {
     # Calculate candidate and maximal gain, keep s and e
-    max_gain = -Inf
+    max_gain = 0
     candidate = NULL
     
     s = intervals[i, 1]

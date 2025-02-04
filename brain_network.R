@@ -96,7 +96,6 @@ hat.rank <- c(15, 15, 15)
 s <- 0
 e <- 150
 frobenius_holder <- numeric(149)
-source("CUSUM.R")
 
 for(t in 2:148){
   frobenius_holder[t] <- CUSUM_frob_SBS(A.tensor, s, e, t, hat.rank)

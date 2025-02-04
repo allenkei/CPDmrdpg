@@ -153,7 +153,7 @@ CUSUM_step1 <- function(obj, s, e, t, obj.B) {
   }
   
   # Compute the CUSUM statistic as an inner product sum
-  D_hat <- sum(weighted_A * weighted_B)
+  D_hat <- abs(sum(weighted_A * weighted_B))
   
   return(D_hat)
 }
