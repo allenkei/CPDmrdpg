@@ -2,6 +2,7 @@
 library(rTensor)
 source("SBS.R")
 source("CUSUM.R")
+source("utility.R")
 
 ##################
 # simulation SBM #
@@ -154,8 +155,27 @@ results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results
 results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                              threshold = c(1000, 500, 250, 50), method = "Greedy", obj.B = B.tensor.odd)
 
-results[[2]]$results
+results[[2]]
 
+
+###########################
+# Example Model Selection # 
+###########################
+source("SBS.R")
+init <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1)
+threshold_list <- seq(1, max(init[[1]]$results[, 2]), length.out=25)
+results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
+                             threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
+
+results[[2]]$results[, 1]
+
+for (i in seq_along(threshold_list)) {
+  candidates <- 2*sort(results[[i+1]]$results[, 1])
+  BIC <- cal_BIC(A.tensor, candidates, hat.rank)
+  cat("Candidates: ", paste(candidates, collapse = ", "), ". BIC =", BIC, "\n", sep = "")
+}
+
+cal_BIC(A.tensor, 2*c(25, 50), hat.rank)
 
 
 # Candidate Selection: 

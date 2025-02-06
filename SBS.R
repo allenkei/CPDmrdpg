@@ -132,11 +132,11 @@ seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2)
     while(i <= nrow(results) && cur_thres_idx <= length(threshold)){
       cat("row ", i, " with threshold index", cur_thres_idx, "\n")
       # Go to next threshold (if threshold too large)
-      # Select candidate (if above threshod and not covered yet)
+      # Select candidate (if above threshold and not covered yet)
       # Next row (if above threshold but covered)
       
       if (results[i, 2] < threshold[cur_thres_idx]) {
-        subset = results[index_list, ]
+        subset = results[index_list, , drop = FALSE]
         solution_path <- c(solution_path, 
                            list(list(threshold = threshold[cur_thres_idx], results = subset)))
         cur_thres_idx <- cur_thres_idx + 1
@@ -152,7 +152,7 @@ seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2)
     
     if (cur_thres_idx <= length(threshold)) {
       # This means all rows were above the current threshold
-      subset = results[index_list, ]
+      subset = results[index_list, , drop = FALSE]
       solution_path <- c(solution_path, 
                          list(list(threshold = threshold[cur_thres_idx], results = subset)))
     }
@@ -172,7 +172,7 @@ seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2)
         }
         i <- i+1
       }
-      subset = results[index_list, ]
+      subset = results[index_list, , drop = FALSE]
       solution_path <- c(solution_path, list(list(threshold = band, results = subset)))
     }
     return(solution_path)
