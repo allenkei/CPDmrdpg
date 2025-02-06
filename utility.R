@@ -42,3 +42,35 @@ cal_BIC <- function(Y, detected_CP, hat.rank){
   return(BIC) # choose the threshold (and corresponding results) with lowest BIC
 }
 
+
+model_selection <- function(results, obj, method = cal_BIC, ...) {
+  # Using results constructed from Seeded Binary Segmentation, 
+  # calculates model selection statistic, and selects best model.
+    # The best model is the highest threshold minimizer of the statistic.
+  # @param results Output of seeded binary segmentation
+  # @param obj Data or model input needed for the method
+  # @param method Function to calculate model selection statistic (default: cal_BIC)
+  # @param ... Additional arguments for the selection method
+  # FIXED TO RUN WITH STEP 1: MULTIPLYING CANDIDATES BY 2
+  method <- match.fun(method)
+  
+  best_cps <- NULL
+  best_BIC <- Inf  # Set initial BIC to a high value
+  best_index = -1
+  
+  for (i in 2:length(results)) {
+    cps <- 2 * sort(results[[i]]$results[, 1])
+    BIC <- method(obj, cps, ...)
+    
+    cat("Candidates: ", paste(cps, collapse = ", "), ". BIC = ", BIC, "\n", sep = "")
+    
+    # Store best model based on minimum BIC
+    if (!is.na(BIC) && BIC < best_BIC) {
+      best_BIC <- BIC
+      best_cps <- cps
+      best_index <- i 
+    }
+  }
+  
+  return(list(Candidates = as.vector(best_cps), BIC = best_BIC, threshold = results[[best_index]]$threshold))
+}
