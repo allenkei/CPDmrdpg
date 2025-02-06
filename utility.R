@@ -38,6 +38,7 @@ cal_BIC <- function(Y, detected_CP, hat.rank){
   }
   
   BIC <- (-2) * log_lik_full + BIC_second_term
+  cat(log_lik_full, "\t", BIC_second_term, "\t")
   
   return(BIC) # choose the threshold (and corresponding results) with lowest BIC
 }
