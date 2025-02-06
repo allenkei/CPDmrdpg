@@ -167,24 +167,18 @@ threshold_list <- seq(1, max(init[[1]]$results[, 2]), length.out=25)
 results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                              threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
 
-length(results)
-       
-results[[2]]$results[, 1]
-
+# Manual calculation
 for (i in seq_along(threshold_list)) {
   candidates <- 2*sort(results[[i+1]]$results[, 1])
   BIC <- cal_BIC(A.tensor, candidates, hat.rank)
   cat("Candidates: ", paste(candidates, collapse = ", "), ". BIC = ", BIC, "\n", sep = "")
 }
 
+# using utilities/model selection
 model_selection(results, A.tensor, hat.rank = hat.rank)
 
-# Candidate Selection: 
-# Narrowest is statistically (slightly) preferred, 
-# but is computationally more expensive for multiple thresholds
-# Greedy is most efficient for multiple thresholds
+# We can pass in other function to determine selections statistics 
+# model_selection(results, A.tensor, method = cal_BIC, hat.rank = hat.rank)
 
-# We are sensitive to the endpoints for Frobenius CUSUMs
-# Fan's weighting seems to fix endpoint issue
 
-# TODO Model selection
+
