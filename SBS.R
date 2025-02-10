@@ -185,9 +185,9 @@ seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2)
 
 
 # Example usage
-T <- 150
-alpha <- sqrt(1/2)
-intervals <- construct_intervals(T, alpha, m = 4)
-print(intervals)
-plot_intervals(intervals)
+#T <- 150
+#alpha <- sqrt(1/2)
+#intervals <- construct_intervals(T, alpha, m = 4)
+#print(intervals)
+#plot_intervals(intervals)
 

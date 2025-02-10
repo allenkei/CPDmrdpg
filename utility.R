@@ -30,7 +30,7 @@ cal_BIC <- function(Y, detected_CP, hat.rank){
     P_matrix  <- estimate_thpca(tensor_sum, hat.rank, tmax = 20) # (n, n, l) # fixed within interval
     
     for(t_within in 1:dim(A_within)[1]){
-      log_lik_t <- sum(A_within[t_within,,,]*log(P_matrix) + (1-A_within[t_within,,,]) * log(1-P_matrix))
+      log_lik_t <- sum(A_within[t_within,,,]*log(P_matrix) + (1-A_within[t_within,,,]) * log(1-P_matrix)) # here has NaN
       log_lik_full <- log_lik_full + log_lik_t
     }
     

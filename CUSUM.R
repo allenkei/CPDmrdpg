@@ -64,8 +64,8 @@ estimate_thpca <- function(Y.tensor, hat.rank, tmax = 20){
   
   P_hat  = Y.hat@data
   
-  P_hat[P_hat > 1]  = 1
-  P_hat[P_hat < 0]  = 0
+  P_hat[P_hat > 1]  = 1 - 1e-10
+  P_hat[P_hat < 0]  = 0 + 1e-10
   
   return(P_hat)
 }
