@@ -17,6 +17,7 @@ for(t_iter in 101:150) A.tensor[t_iter,,,] <- generate_tensor_probability_direct
 cal_BIC(A.tensor, c(50,100), hat.rank = c(15,15,15))
 cal_BIC(A.tensor, c(25, 50, 100), hat.rank = c(15,15,15))
 cal_BIC(A.tensor, c(25, 50, 75, 100,125), hat.rank = c(15,15,15))
+cal_BIC(A.tensor, c(25, 35, 50, 61, 75, 87, 100, 111, 125, 136), hat.rank = c(15,15,15))
 cal_BIC(A.tensor, c(100), hat.rank = c(15,15,15)) 
 
 # the log_lik for 1 CP is similar to the log_lik for 2 CP

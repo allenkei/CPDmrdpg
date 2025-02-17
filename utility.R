@@ -15,6 +15,7 @@ cal_BIC <- function(Y, detected_CP, hat.rank){
   num_par_within <- n_node*hat.rank[1]*hat.rank[2] + n_node*hat.rank[2]*hat.rank[3] + n_node*hat.rank[1]*hat.rank[3]
   num_data <- log(num_T * n_node * n_node * num_layer)
   BIC_second_term <- num_data * num_par_within * (length(detected_CP)+1)
+  AIC_second_term <- num_par_within * (length(detected_CP)+1)
   
   # Calculate the first term in BIC
   CP <- c(detected_CP, num_T) # add the last time point # i.e. c(50, 100, 150)
@@ -38,9 +39,13 @@ cal_BIC <- function(Y, detected_CP, hat.rank){
   }
   
   BIC <- (-2) * log_lik_full + BIC_second_term
-  cat(log_lik_full, "\t", BIC_second_term, "\t")
+  AIC <- (-2) * log_lik_full + 2 * num_par_within * (length(detected_CP)+1)
   
-  return(BIC) # choose the threshold (and corresponding results) with lowest BIC
+  output <- list(BIC = BIC, AIC = AIC, log_lik = log_lik_full)
+  
+  # cat(log_lik_full, "\t", BIC_second_term, "\t")
+  
+  return(output) # choose the threshold (and corresponding results) with lowest BIC
 }
 
 
@@ -61,7 +66,9 @@ model_selection <- function(results, obj, method = cal_BIC, ...) {
   
   for (i in 2:length(results)) {
     cps <- 2 * sort(results[[i]]$results[, 1])
-    BIC <- method(obj, cps, ...)
+    eval_output <- method(obj, cps, ...)
+    
+    BIC <- eval_output[[1]]; AIC <- eval_output[[2]]; log_lik <- eval_output[[3]]
     
     cat("Candidates: ", paste(cps, collapse = ", "), ". BIC = ", BIC, "\n", sep = "")
     
