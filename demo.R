@@ -106,7 +106,7 @@ max <-max(init[[1]]$results[, 2])
 init[[2]]$results[, 2]
 
 # Thresholding using Max Gain
-threshold_list <- c(seq(1, max, length.out=49), max + 1)
+threshold_list <- seq(1, max + 1, length.out=50)
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                              threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
 out <- elbow(results_ms, A.tensor, hat.rank)
@@ -116,7 +116,7 @@ plot(vals, ylab = "Log-Likelihood", main = "Thresholds Equally Spaced")
 text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 
 # Thresholding using Max Gain, log spacing
-threshold_list <- exp(c(seq(1, log(max), length.out=49), log(max) + 1))
+threshold_list <- exp(seq(1, log(max) + 1, length.out=50))
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
 out <- elbow(results_ms, A.tensor, hat.rank)
@@ -146,7 +146,7 @@ plot(ncps, vals, xlab = "Number of Changepoints", ylab = "Log-Likelihood", main 
 text(ncps, vals, ncps, pos = 1, cex = 0.8)
 
 # Thresholding using Max Gain, < 15 Changepoints
-threshold_list <- c(seq(1, max, length.out=49), max + 1)
+threshold_list <- seq(1, max + 1, length.out=50)
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
 out <- elbow(results_ms, A.tensor, hat.rank)
@@ -157,7 +157,7 @@ mtext("Less than 15 Changepoints", side = 3, line = 0.5, cex = 0.9)
 text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 
 # Thresholding using Max Gain, log spacing, < 15 Changepoints
-threshold_list <- exp(c(seq(1, log(max), length.out=49), log(max) + 1))
+threshold_list <- exp(seq(1, log(max) + 1, length.out=50))
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
 out <- elbow(results_ms, A.tensor, hat.rank)
