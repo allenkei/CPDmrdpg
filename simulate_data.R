@@ -1,8 +1,5 @@
 
 library(rTensor)
-#source("SBS.R")
-#source("CUSUM.R")
-#source("utility.R")
 
 ##################
 # simulation SBM #
