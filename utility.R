@@ -168,7 +168,7 @@ cal_log_lik <- function(Y, detected_CP, hat.rank){
   return(log_lik_full) # choose the threshold (and corresponding results) with lowest BIC
 }
 
-ELBO <- function(results, obj, hat.rank) {
+elbow <- function(results, obj, hat.rank) {
   # Using results constructed from Seeded Binary Segmentation, 
   # Calculates likelihood, and plots
   # @param results Output of seeded binary segmentation

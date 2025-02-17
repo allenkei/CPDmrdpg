@@ -109,7 +109,7 @@ init[[2]]$results[, 2]
 threshold_list <- c(seq(1, max, length.out=49), max + 1)
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                              threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- ELBO(results_ms, A.tensor, hat.rank)
+out <- elbow(results_ms, A.tensor, hat.rank)
 vals <- unique(out[[1]])
 ncps <- unique(out[[2]])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Equally Spaced")
@@ -119,7 +119,7 @@ text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 threshold_list <- exp(c(seq(1, log(max), length.out=49), log(max) + 1))
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- ELBO(results_ms, A.tensor, hat.rank)
+out <- elbow(results_ms, A.tensor, hat.rank)
 vals <- unique(out[[1]])
 ncps <- unique(out[[2]])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Log-Spaced")
@@ -129,7 +129,7 @@ text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 threshold_list = c(max + 1, init[[2]]$results[, 2][1:10])
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- ELBO(results_ms, A.tensor, hat.rank)
+out <- elbow(results_ms, A.tensor, hat.rank)
 vals <- out[[1]]
 ncps <- out[[2]]
 plot(ncps, vals, xlab = "Number of Changepoints", ylab = "Log-Likelihood", main = "Thresholds via Changepoints")
@@ -139,7 +139,7 @@ text(ncps, vals, ncps, pos = 1, cex = 0.8)
 threshold_list = c(max + 1, init[[2]]$results[, 2][1:20])
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- ELBO(results_ms, A.tensor, hat.rank)
+out <- elbow(results_ms, A.tensor, hat.rank)
 vals <- out[[1]]
 ncps <- out[[2]]
 plot(ncps, vals, xlab = "Number of Changepoints", ylab = "Log-Likelihood", main = "Thresholds via Changepoints")
@@ -149,7 +149,7 @@ text(ncps, vals, ncps, pos = 1, cex = 0.8)
 threshold_list <- c(seq(1, max, length.out=49), max + 1)
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- ELBO(results_ms, A.tensor, hat.rank)
+out <- elbow(results_ms, A.tensor, hat.rank)
 vals <- unique(out[[1]][out[[2]] < 15])
 ncps <- unique(out[[2]][out[[2]] < 15])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Equally Spaced")
@@ -160,7 +160,7 @@ text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 threshold_list <- exp(c(seq(1, log(max), length.out=49), log(max) + 1))
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- ELBO(results_ms, A.tensor, hat.rank)
+out <- elbow(results_ms, A.tensor, hat.rank)
 vals <- unique(out[[1]][out[[2]] < 15])
 ncps <- unique(out[[2]][out[[2]] < 15])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Log-Spaced")
