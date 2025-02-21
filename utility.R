@@ -123,58 +123,61 @@ l1 <- function(Y, detected_CP, hat.rank, beta = 2){
   
   cat("Candidates: ", paste(detected_CP, collapse = ", "), ". Penalty = ", penalty, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
   
-  return((-2) * log_lik_full + beta * penalty) # choose the threshold (and corresponding results) with lowest BIC
+  return(-log_lik_full + beta * penalty) # choose the threshold (and corresponding results) with lowest BIC
 }
 
-model_selection <- function(results, obj, method = BIC, ...) {
-  # Using results constructed from Seeded Binary Segmentation, 
-  # calculates model selection statistic, and selects best model.
-    # The best model is the highest threshold minimizer of the statistic.
-  # @param results Output of seeded binary segmentation
-  # @param obj Data or model input needed for the method
-  # @param method Function to calculate model selection statistic (default: cal_BIC)
-  # @param ... Additional arguments for the selection method
-  # FIXED TO RUN WITH STEP 1: MULTIPLYING CANDIDATES BY 2
-  # TODO: add elbow as an option
-  method <- match.fun(method)
-  
-  best_cps <- NULL
-  best_stat <- Inf  # Set initial stat to a high value
-  best_index = -1
-  
-  for (i in 2:length(results)) {
-    cps <- 2 * sort(results[[i]]$results[, 1])
-    Stat <- method(obj, cps, ...)
-    
-    # Store best model based on minimum Stat
-    if (!is.na(Stat) && Stat < best_stat) {
-      best_stat <- Stat
-      best_cps <- cps
-      best_index <- i 
-    }
-  }
-  
-  return(list(Candidates = as.vector(best_cps), Stat = best_stat, threshold = results[[best_index]]$threshold))
-}
-
-elbow <- function(results, obj, hat.rank) {
+elbow <- function(obj, cps, hat.rank) {
   # Using results constructed from Seeded Binary Segmentation, 
   # Calculates likelihood, and plots
   # @param results Output of seeded binary segmentation
   # @param obj Data or model input needed for the method
   # @param hat.rank: c(15,15,15) for the function 'estimate_thpca()'
   
-  log_lik <- numeric(length(results) - 1)
+  log_lik <- cal_log_lik(obj, cps, hat.rank)
+  cat("Candidates: ", paste(cps, collapse = ", "), ". log-Likelihood = ", log_lik, "\n", sep = "")
+  
+  return(log_lik)
+}
+
+model_selection <- function(results, obj, method = "BIC", ...) {
+  # Using results constructed from Seeded Binary Segmentation, 
+  # calculates model selection statistic, and selects best model.
+  # The best model is the highest threshold minimizer of the statistic.
+  # @param results Output of seeded binary segmentation
+  # @param obj Data or model input needed for the method
+  # @param method Function to calculate model selection statistic (default: cal_BIC)
+  # @param ... Additional arguments for the selection method
+  # FIXED TO RUN WITH STEP 1: MULTIPLYING CANDIDATES BY 2
+  # TODO: add elbow as an option
+  fun <- match.fun(method)
+  if (method == "elbow") {
+    # Fancy calculation of "best"
+  } 
+  
+  best_cps <- NULL
+  best_stat <- Inf  # Set initial stat to a high value
+  best_index = -1
+  stats <- numeric(length(results) - 1)
   num_cps <- numeric(length(results) - 1)
   
   for (i in 2:length(results)) {
+    # Print Statement Handled Inside fun()
     cps <- 2 * sort(results[[i]]$results[, 1])
-    log_lik[i-1] <- cal_log_lik(obj, cps, hat.rank)
+    stats[i-1] <- fun(obj, cps, ...)
     num_cps[i-1] <- length(cps)
-    cat("Candidates: ", paste(cps, collapse = ", "), ". log-Likelihood = ", log_lik[i-1], "\n", sep = "")
+    
+    # Store best model based on minimum Stat
+    if (stats[i-1] < best_stat) {
+      best_stat <- stats[i-1]
+      best_cps <- cps
+      best_index <- i 
+    }
   }
   
-  # plot(log_lik)
+  if (method == "elbow") {
+    # Fancy calculation of "best"
+  } 
   
-  return(list("Log_Likelihood" = log_lik, "ncps" = num_cps))
+  return(list("candidates" = as.vector(best_cps), "stat" = best_stat, "threshold" = results[[best_index]]$threshold, 
+              "range" = stats, "ncps" = num_cps))
 }

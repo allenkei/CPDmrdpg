@@ -109,7 +109,7 @@ init[[2]]$results[, 2]
 threshold_list <- seq(1, max + 1, length.out=50)
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                              threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- elbow(results_ms, A.tensor, hat.rank)
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
 vals <- unique(out[[1]])
 ncps <- unique(out[[2]])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Equally Spaced")
@@ -119,7 +119,7 @@ text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 threshold_list <- exp(seq(1, log(max) + 1, length.out=50))
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- elbow(results_ms, A.tensor, hat.rank)
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
 vals <- unique(out[[1]])
 ncps <- unique(out[[2]])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Log-Spaced")
@@ -129,7 +129,7 @@ text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 threshold_list = c(max + 1, init[[2]]$results[, 2][1:10])
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- elbow(results_ms, A.tensor, hat.rank)
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
 vals <- out[[1]]
 ncps <- out[[2]]
 plot(ncps, vals, xlab = "Number of Changepoints", ylab = "Log-Likelihood", main = "Thresholds via Changepoints")
@@ -139,7 +139,7 @@ text(ncps, vals, ncps, pos = 1, cex = 0.8)
 threshold_list = c(max + 1, init[[2]]$results[, 2][1:20])
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- elbow(results_ms, A.tensor, hat.rank)
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
 vals <- out[[1]]
 ncps <- out[[2]]
 plot(ncps, vals, xlab = "Number of Changepoints", ylab = "Log-Likelihood", main = "Thresholds via Changepoints")
@@ -149,7 +149,7 @@ text(ncps, vals, ncps, pos = 1, cex = 0.8)
 threshold_list <- seq(1, max + 1, length.out=50)
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- elbow(results_ms, A.tensor, hat.rank)
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
 vals <- unique(out[[1]][out[[2]] < 15])
 ncps <- unique(out[[2]][out[[2]] < 15])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Equally Spaced")
@@ -160,7 +160,7 @@ text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 threshold_list <- exp(seq(1, log(max) + 1, length.out=50))
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- elbow(results_ms, A.tensor, hat.rank)
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
 vals <- unique(out[[1]][out[[2]] < 15])
 ncps <- unique(out[[2]][out[[2]] < 15])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Log-Spaced")
@@ -169,9 +169,22 @@ text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 
 
 # using utilities/model selection
+# Both AIC and BIC prefer fewest (0) changepoints
 source("utility.R")
-model_selection(results_ms, A.tensor, method = BIC, hat.rank = hat.rank)
-# model_selection(results, A.tensor, method = cal_BIC, hat.rank = hat.rank)
+init <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
+                          threshold = 0, method = "Greedy", obj.B = B.tensor.odd)
+max <-max(init[[1]]$results[, 2])
+threshold_list <- exp(seq(1, log(max) + 1, length.out=50))
+results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
+                                threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
+
+model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 1)[1:3]  # many 
+model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 2)[1:3]  # (default) many 
+model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 5)[1:3]  # {50, 100}
+model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 10)[1:3] # {50, 100}
+model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 20)[1:3] # {0}
+
+model_selection(results_ms, A.tensor, method = "AIC", hat.rank = hat.rank)[[1:3]]
 # Both AIC and BIC prefer fewest (0) changepoints
 
 
