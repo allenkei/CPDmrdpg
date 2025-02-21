@@ -169,7 +169,8 @@ text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 
 
 # using utilities/model selection
-model_selection(results_ms, A.tensor, method = cal_AIC, hat.rank = hat.rank)
+source("utility.R")
+model_selection(results_ms, A.tensor, method = BIC, hat.rank = hat.rank)
 # model_selection(results, A.tensor, method = cal_BIC, hat.rank = hat.rank)
 # Both AIC and BIC prefer fewest (0) changepoints
 
