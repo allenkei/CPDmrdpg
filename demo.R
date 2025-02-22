@@ -95,20 +95,59 @@ results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results
 results[[6]]
 
 
-###########################
-# Example Model Selection # 
-###########################
+###################
+# Model Selection # 
+###################
 
 source("utility.R")
+# Kyle's guess for best method
+# Thresholding with 20 changepoints
+# Elbow method via kneedle: https://ieeexplore.ieee.org/document/5961514
 init <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                           threshold = 0, method = "Greedy", obj.B = B.tensor.odd)
 max <-max(init[[1]]$results[, 2])
 init[[2]]$results[, 2]
 
+threshold_list = c(max + 1, init[[2]]$results[, 2][1:20])
+results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
+                                threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
+vals <- out[[4]]
+ncps <- out[[5]]
+plot(ncps, vals, xlab = "Number of Changepoints", ylab = "Log-Likelihood", main = "Thresholds via Changepoints")
+text(ncps, vals, ncps, pos = 1, cex = 0.8)
+symbols(length(out[[1]]), out[[2]], circles = 1, add = TRUE, inches = 0.08, fg = "red")
+text(length(out[[1]]), out[[2]], "Knee", pos = 3, cex = 0.8, col = "red")
+
+
+################################
+# More Model Selection Options # 
+################################
+
+# using utilities/model selection
+# Both AIC and BIC prefer fewest (0) changepoints
+# New l1 penalty - which requires tuning parameter
+init <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
+                          threshold = 0, method = "Greedy", obj.B = B.tensor.odd)
+max <-max(init[[1]]$results[, 2])
+threshold_list <- exp(seq(1, log(max) + 1, length.out=50))
+results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
+                                threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
+
+model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 1)[1:3]  # many 
+model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 2)[1:3]  # (default) many 
+model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 5)[1:3]  # {50, 100}
+model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 10)[1:3] # {50, 100}
+model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 20)[1:3] # {0}
+
+model_selection(results_ms, A.tensor, method = "AIC", hat.rank = hat.rank)[[1:3]]
+
+
+# Other elbow options
 # Thresholding using Max Gain
 threshold_list <- seq(1, max + 1, length.out=50)
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
-                             threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
+                                threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
 out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
 vals <- unique(out[[4]])
 ncps <- unique(out[[5]])
@@ -132,18 +171,6 @@ text(which(length(out[[1]]) == ncps)[1], out[[2]], "Knee", pos = 3, cex = 0.8, c
 
 # Thresholding using Changepoints from Greedy, top 10 Gains
 threshold_list = c(max + 1, init[[2]]$results[, 2][1:10])
-results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
-                                threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
-vals <- out[[4]]
-ncps <- out[[5]]
-plot(ncps, vals, xlab = "Number of Changepoints", ylab = "Log-Likelihood", main = "Thresholds via Changepoints")
-text(ncps, vals, ncps, pos = 1, cex = 0.8)
-symbols(length(out[[1]]), out[[2]], circles = 1, add = TRUE, inches = 0.08, fg = "red")
-text(length(out[[1]]), out[[2]], "Knee", pos = 3, cex = 0.8, col = "red")
-
-# Thresholding using Changepoints from Greedy, top 20 Gains
-threshold_list = c(max + 1, init[[2]]$results[, 2][1:20])
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
 out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
@@ -197,28 +224,6 @@ knee <- kneedle(1:length(ncps), vals, concave = FALSE, decreasing = FALSE)
 print(knee)
 symbols(knee[1], knee[2], circles = 1, add = TRUE, inches = 0.08, fg = "red")
 text(knee[1], knee[2], "Knee", pos = 3, cex = 0.8, col = "red")
-
-
-
-# using utilities/model selection
-# Both AIC and BIC prefer fewest (0) changepoints
-source("utility.R")
-init <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
-                          threshold = 0, method = "Greedy", obj.B = B.tensor.odd)
-max <-max(init[[1]]$results[, 2])
-threshold_list <- exp(seq(1, log(max) + 1, length.out=50))
-results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
-                                threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-
-model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 1)[1:3]  # many 
-model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 2)[1:3]  # (default) many 
-model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 5)[1:3]  # {50, 100}
-model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 10)[1:3] # {50, 100}
-model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 20)[1:3] # {0}
-
-model_selection(results_ms, A.tensor, method = "AIC", hat.rank = hat.rank)[[1:3]]
-# Both AIC and BIC prefer fewest (0) changepoints
-
 
 
 
