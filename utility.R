@@ -127,12 +127,6 @@ l1 <- function(Y, detected_CP, hat.rank, beta = 2){
 }
 
 elbow <- function(obj, cps, hat.rank) {
-  # Using results constructed from Seeded Binary Segmentation, 
-  # Calculates likelihood, and plots
-  # @param results Output of seeded binary segmentation
-  # @param obj Data or model input needed for the method
-  # @param hat.rank: c(15,15,15) for the function 'estimate_thpca()'
-  
   log_lik <- cal_log_lik(obj, cps, hat.rank)
   cat("Candidates: ", paste(cps, collapse = ", "), ". log-Likelihood = ", log_lik, "\n", sep = "")
   
@@ -150,10 +144,7 @@ model_selection <- function(results, obj, method = "BIC", ...) {
   # FIXED TO RUN WITH STEP 1: MULTIPLYING CANDIDATES BY 2
   # TODO: add elbow as an option
   fun <- match.fun(method)
-  if (method == "elbow") {
-    # Fancy calculation of "best"
-  } 
-  
+
   best_cps <- NULL
   best_stat <- Inf  # Set initial stat to a high value
   best_index = -1
