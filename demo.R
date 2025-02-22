@@ -4,6 +4,7 @@ source("SBS.R")
 source("CUSUM.R")
 source("utility.R")
 source("simulate_data.R")
+# install_github("etam4260/kneedle") 
 library(kneedle)
 
 ###################
@@ -108,82 +109,74 @@ init[[2]]$results[, 2]
 threshold_list <- seq(1, max + 1, length.out=50)
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                              threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
-vals <- unique(out[[1]])
-ncps <- unique(out[[2]])
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
+vals <- unique(out[[4]])
+ncps <- unique(out[[5]])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Equally Spaced")
 text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
-knee <- kneedle(1:length(ncps), vals, concave = FALSE, decreasing = FALSE)
-print(knee)
-symbols(knee[1], knee[2], circles = 1, add = TRUE, inches = 0.08, fg = "red")
-text(knee[1], knee[2], "Knee", pos = 3, cex = 0.8, col = "red")
+symbols(which(length(out[[1]]) == ncps)[1], out[[2]], circles = 1, add = TRUE, inches = 0.08, fg = "red")
+text(which(length(out[[1]]) == ncps)[1], out[[2]], "Knee", pos = 3, cex = 0.8, col = "red")
+
 
 # Thresholding using Max Gain, log spacing
 threshold_list <- exp(seq(1, log(max) + 1, length.out=50))
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
-vals <- unique(out[[1]])
-ncps <- unique(out[[2]])
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
+vals <- unique(out[[4]])
+ncps <- unique(out[[5]])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Log-Spaced")
 text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
-knee <- kneedle(1:length(ncps), vals, concave = FALSE, decreasing = FALSE)
-print(knee)
-symbols(knee[1], knee[2], circles = 1, add = TRUE, inches = 0.08, fg = "red")
-text(knee[1], knee[2], "Knee", pos = 3, cex = 0.8, col = "red")
+symbols(which(length(out[[1]]) == ncps)[1], out[[2]], circles = 1, add = TRUE, inches = 0.08, fg = "red")
+text(which(length(out[[1]]) == ncps)[1], out[[2]], "Knee", pos = 3, cex = 0.8, col = "red")
 
 # Thresholding using Changepoints from Greedy, top 10 Gains
 threshold_list = c(max + 1, init[[2]]$results[, 2][1:10])
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
-vals <- out[[1]]
-ncps <- out[[2]]
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
+vals <- out[[4]]
+ncps <- out[[5]]
 plot(ncps, vals, xlab = "Number of Changepoints", ylab = "Log-Likelihood", main = "Thresholds via Changepoints")
 text(ncps, vals, ncps, pos = 1, cex = 0.8)
-knee <- kneedle(ncps, vals, concave = FALSE, decreasing = FALSE)
-print(knee)
-symbols(knee[1], knee[2], circles = 1, add = TRUE, inches = 0.08, fg = "red")
-text(knee[1], knee[2], "Knee", pos = 3, cex = 0.8, col = "red")
+symbols(length(out[[1]]), out[[2]], circles = 1, add = TRUE, inches = 0.08, fg = "red")
+text(length(out[[1]]), out[[2]], "Knee", pos = 3, cex = 0.8, col = "red")
 
 # Thresholding using Changepoints from Greedy, top 20 Gains
 threshold_list = c(max + 1, init[[2]]$results[, 2][1:20])
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
-vals <- out[[1]]
-ncps <- out[[2]]
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
+vals <- out[[4]]
+ncps <- out[[5]]
 plot(ncps, vals, xlab = "Number of Changepoints", ylab = "Log-Likelihood", main = "Thresholds via Changepoints")
 text(ncps, vals, ncps, pos = 1, cex = 0.8)
-knee <- kneedle(ncps, vals, concave = FALSE, decreasing = FALSE)
-print(knee)
-symbols(knee[1], knee[2], circles = 1, add = TRUE, inches = 0.08, fg = "red")
-text(knee[1], knee[2], "Knee", pos = 3, cex = 0.8, col = "red")
+symbols(length(out[[1]]), out[[2]], circles = 1, add = TRUE, inches = 0.08, fg = "red")
+text(length(out[[1]]), out[[2]], "Knee", pos = 3, cex = 0.8, col = "red")
 
 # Thresholding using Changepoints from Greedy, all
 threshold_list = c(max + 1, init[[2]]$results[, 2])
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
-vals <- out[[1]]
-ncps <- out[[2]]
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
+vals <- out[[4]]
+ncps <- out[[5]]
 plot(ncps, vals, xlab = "Number of Changepoints", ylab = "Log-Likelihood", main = "Thresholds via Changepoints")
 text(ncps, vals, ncps, pos = 1, cex = 0.8)
-knee <- kneedle(ncps, vals, concave = FALSE, decreasing = FALSE)
-print(knee)
-symbols(knee[1], knee[2], circles = 1, add = TRUE, inches = 0.08, fg = "red")
-text(knee[1], knee[2], "Knee", pos = 3, cex = 0.8, col = "red")
+symbols(length(out[[1]]), out[[2]], circles = 1, add = TRUE, inches = 0.08, fg = "red")
+text(length(out[[1]]), out[[2]], "Knee", pos = 3, cex = 0.8, col = "red")
 
 # Thresholding using Max Gain, < 15 Changepoints
 threshold_list <- seq(1, max + 1, length.out=50)
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
-vals <- unique(out[[1]][out[[2]] < 15])
-ncps <- unique(out[[2]][out[[2]] < 15])
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
+vals <- unique(out[[4]][out[[5]] < 15])
+ncps <- unique(out[[5]][out[[5]] < 15])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Equally Spaced")
 mtext("Less than 15 Changepoints", side = 3, line = 0.5, cex = 0.9)
 text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
+# Need to recalculate knee
 knee <- kneedle(1:length(ncps), vals, concave = FALSE, decreasing = FALSE)
 print(knee)
 symbols(knee[1], knee[2], circles = 1, add = TRUE, inches = 0.08, fg = "red")
@@ -193,16 +186,19 @@ text(knee[1], knee[2], "Knee", pos = 3, cex = 0.8, col = "red")
 threshold_list <- exp(seq(1, log(max) + 1, length.out=50))
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
-out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)[c(4, 5)]
-vals <- unique(out[[1]][out[[2]] < 15])
-ncps <- unique(out[[2]][out[[2]] < 15])
+out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
+vals <- unique(out[[4]][out[[5]] < 15])
+ncps <- unique(out[[5]][out[[5]] < 15])
 plot(vals, ylab = "Log-Likelihood", main = "Thresholds Log-Spaced")
 mtext("Less than 15 Changepoints", side = 3, line = 0.5, cex = 0.9)
 text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
+# Need to recalculate knee
 knee <- kneedle(1:length(ncps), vals, concave = FALSE, decreasing = FALSE)
 print(knee)
 symbols(knee[1], knee[2], circles = 1, add = TRUE, inches = 0.08, fg = "red")
 text(knee[1], knee[2], "Knee", pos = 3, cex = 0.8, col = "red")
+
+
 
 # using utilities/model selection
 # Both AIC and BIC prefer fewest (0) changepoints

@@ -127,6 +127,7 @@ l1 <- function(Y, detected_CP, hat.rank, beta = 2){
 }
 
 elbow <- function(obj, cps, hat.rank) {
+  # https://raghavan.usc.edu/papers/kneedle-simplex11.pdf
   log_lik <- cal_log_lik(obj, cps, hat.rank)
   cat("Candidates: ", paste(cps, collapse = ", "), ". log-Likelihood = ", log_lik, "\n", sep = "")
   
@@ -167,6 +168,13 @@ model_selection <- function(results, obj, method = "BIC", ...) {
   
   if (method == "elbow") {
     # Fancy calculation of "best"
+    # https://raghavan.usc.edu/papers/kneedle-simplex11.pdf
+    
+    # unique(stats[num_cps < 15]), unique(num_cps[num_cps < 15])
+    knee <- kneedle(1:length(unique(stats)), unique(stats), concave = FALSE, decreasing = FALSE)
+    best_stat <- knee[2]
+    best_index <- which(stats == best_stat)[1] + 1
+    best_cps <- 2 * sort(results[[best_index]]$results[, 1])
   } 
   
   return(list("candidates" = as.vector(best_cps), "stat" = best_stat, "threshold" = results[[best_index]]$threshold, 
