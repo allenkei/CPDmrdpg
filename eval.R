@@ -64,4 +64,4 @@ eval_CP <- function(true_CP, detected_CP, num_T){
 }
 
 
-eval_CP(true_CP = c(50, 100), detected_CP = c(50, 100), num_T = 150)
+#eval_CP(true_CP = c(50, 100), detected_CP = c(50, 100), num_T = 150)
