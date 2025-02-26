@@ -1,19 +1,21 @@
 eval_CP <- function(true_CP, detected_CP, num_T){
 
-  detected_CP <- detected_CP + 1 # Question: is 50 CP or 51 CP (which definition of CP)?
+  # i.e. 50 and 100 are CPs
   num_CP <- length(detected_CP)
   
-  gt_CP_corrected <- c(1, true_CP, num_T) # c(1,50,100,150)
-  detected_CP_corrected <- c(1, detected_CP, num_T)
+  gt_CP_corrected <- c(0, true_CP, num_T) # c(0,50,100,150)
+  detected_CP_corrected <- c(0, detected_CP, num_T) # c(0,50,100,150)
   
   # intervals
   gt_list <- detected_list <- list();
   for(i in 2:length(gt_CP_corrected)){
-    gt_list[[i-1]] <- gt_CP_corrected[i-1]:(gt_CP_corrected[i]-1)
+    gt_list[[i-1]] <- (gt_CP_corrected[i-1] + 1):(gt_CP_corrected[i])
   }
+  
   for(i in 2:length(detected_CP_corrected)){
-    detected_list[[i-1]] <- detected_CP_corrected[i-1]:(detected_CP_corrected[i]-1)
+    detected_list[[i-1]] <- (detected_CP_corrected[i-1] + 1):(detected_CP_corrected[i])
   }
+
   
   # one-sided Hausdorff distance
   if(num_CP == 0){
@@ -64,4 +66,5 @@ eval_CP <- function(true_CP, detected_CP, num_T){
 }
 
 
+# Example Usage
 #eval_CP(true_CP = c(50, 100), detected_CP = c(50, 100), num_T = 150)
