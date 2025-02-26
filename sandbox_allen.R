@@ -84,7 +84,7 @@ for(seq_iter in 1:num_seq){
   
   metric_list <- eval_CP(true_CP, detected_CP = out[[1]], num_T)
   
-  cat("detected CP after model selection:", out[[1]])
+  cat("detected CP after model selection:", out[[1]], "\n")
   cat("metrics: ",metric_list[[1]], metric_list[[2]], metric_list[[3]], metric_list[[4]])
   
   output_holder[seq_iter ,] <- c(metric_list[[1]], metric_list[[2]], metric_list[[3]], metric_list[[4]])

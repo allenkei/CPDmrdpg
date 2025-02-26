@@ -90,10 +90,10 @@ results_all_step1 <- cusum_on_intervals(CUSUM_step1, A.tensor.even, intervals, o
 results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                              threshold = c(1800, 900, 500, 200, 1), method = "Narrowest", obj.B = B.tensor.odd)
 results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
-                             threshold = c(1000, 500, 250, 50, 1), method = "Greedy", obj.B = B.tensor.odd)
+                             threshold = c(1000, 500, 250, 70, 1), method = "Greedy", obj.B = B.tensor.odd)
 
-results[[6]]
-
+mean(results[[6]]$results)
+results[[5]]
 
 ###################
 # Model Selection # 
@@ -120,10 +120,11 @@ symbols(length(out[[1]]), out[[2]], circles = 1, add = TRUE, inches = 0.08, fg =
 text(length(out[[1]]), out[[2]], "Knee", pos = 3, cex = 0.8, col = "red")
 
 
+
 ################################
 # More Model Selection Options # 
 ################################
-
+source("utility.R")
 # using utilities/model selection
 # Both AIC and BIC prefer fewest (0) changepoints
 # New l1 penalty - which requires tuning parameter
@@ -140,8 +141,9 @@ model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta =
 model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 10)[1:3] # {50, 100}
 model_selection(results_ms, A.tensor, method = "l1", hat.rank = hat.rank, beta = 20)[1:3] # {0}
 
-model_selection(results_ms, A.tensor, method = "AIC", hat.rank = hat.rank)[[1:3]]
-
+out <- model_selection(results_ms, A.tensor, method = "MDL", hat.rank = hat.rank)
+plot(unique(out[[4]]))
+out[[1]]
 
 # Other elbow options
 # Thresholding using Max Gain

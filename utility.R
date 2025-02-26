@@ -19,7 +19,7 @@ cal_log_lik <- function(Y, detected_CP, hat.rank){
     
     tensor_sum <- (1/(end_t-start_t)) * as.tensor( apply(A_within, c(2, 3, 4), sum) ) # (n, n, l)
     P_matrix  <- estimate_thpca(tensor_sum, hat.rank, tmax = 20) # (n, n, l) # fixed within interval
-    # Probabily getting bad estimates for P when not enough data 
+    # Probably getting bad estimates for P when not enough data 
     
     eps <- 1e-6
     
@@ -58,6 +58,41 @@ BIC <- function(Y, detected_CP, hat.rank){
   cat("Candidates: ", paste(detected_CP, collapse = ", "), ". BIC = ", BIC, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
   
   return(BIC) # choose the threshold (and corresponding results) with lowest BIC
+}
+
+MDL <- function(Y, detected_CP, hat.rank){
+  
+  # 1. The penalty of a real-valued parameter estimated by n data points is log2 n;
+  # 2. The penalty of an unbounded integer parameter K is 2 log2 K;
+  # 3. The penalty of an integer bounded by a known integer N is 2 log2 N.
+  # https://www.mdpi.com/1099-4300/26/1/50
+  # Y: data with size (T, n, n, l)
+  # detected_CP: vector of change points (cp1, cp2, ..., cpk) from a particular threshold # i.e. c(50,100)
+  # hat.rank: c(15,15,15) for the function 'estimate_thpca()'
+  
+  num_T <- dim(Y)[1]     # T
+  n_node <- dim(Y)[2]    # n
+  num_layer <- dim(Y)[4] # l
+  log_lik_full <- cal_log_lik(Y, detected_CP, hat.rank)
+  
+  K <- length(detected_CP)
+  p <- n_node*hat.rank[1]*hat.rank[2] + n_node*hat.rank[2]*hat.rank[3] + n_node*hat.rank[1]*hat.rank[3]
+  
+  penalty <- 2 * log(max(K, 1)) + 2*K*log(num_T) # should be num_data <- num_T * n_node * n_node * num_layer? 
+  CP <- c(detected_CP, num_T) # add the last time point # i.e. c(50, 100, 150)
+  
+  start_t <- 0
+  for (i in 1:length(CP)) {
+    
+    end_t <- CP[i] 
+    penalty <- penalty + p*log(end_t - start_t)
+    start_t <- end_t # make sure to update start_t
+  }
+  
+  MDL <- (-2) * log_lik_full + penalty
+  cat("Candidates: ", paste(detected_CP, collapse = ", "), ". MDL = ", MDL, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
+  
+  return(MDL) # choose the threshold (and corresponding results) with lowest MDL
 }
 
 AIC <- function(Y, detected_CP, hat.rank){
