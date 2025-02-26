@@ -12,10 +12,10 @@ library(kneedle)
 # DEMO #
 ########
 
-#load("data/seq10n50s1.RData") # Scenario 1 with node 50
-#load("data/seq10n100s1.RData") # Scenario 1 with node 100
-load("data/seq10n50s2.RData") # Scenario 2 with node 50
-#load("data/seq10n100s2.RData") # Scenario 2 with node 100
+# load("data/seq10n50s1.RData") # Scenario 1 with node 50
+# load("data/seq10n100s1.RData") # Scenario 1 with node 100
+# load("data/seq10n50s2.RData") # Scenario 2 with node 50
+# load("data/seq10n100s2.RData") # Scenario 2 with node 100
 
 dim(A.all_seq) # 10 150  50  50   4
 

@@ -206,7 +206,7 @@ model_selection <- function(results, obj, method = "BIC", ...) {
     # https://raghavan.usc.edu/papers/kneedle-simplex11.pdf
     
     # unique(stats[num_cps < 15]), unique(num_cps[num_cps < 15])
-    knee <- kneedle(1:length(unique(stats)), unique(stats), concave = FALSE, decreasing = FALSE)
+    knee <- kneedle(1:length(unique(stats)), unique(stats), concave = TRUE, decreasing = FALSE)
     best_stat <- knee[2]
     best_index <- which(stats == best_stat)[1] + 1
     best_cps <- 2 * sort(results[[best_index]]$results[, 1])
