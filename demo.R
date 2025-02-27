@@ -2,7 +2,7 @@
 library(rTensor)
 source("SBS.R")
 source("CUSUM.R")
-source("utility.R")
+source("model_selection.R")
 source("simulate_data.R")
 # install_github("etam4260/kneedle") 
 library(kneedle)
@@ -99,16 +99,16 @@ results[[5]]
 # Model Selection # 
 ###################
 
-source("utility.R")
+source("model_selection.R")
 # Kyle's guess for best method
-# Thresholding with 20 changepoints
+# Thresholding with 10 changepoints
 # Elbow method via kneedle: https://ieeexplore.ieee.org/document/5961514
 init <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                           threshold = 0, method = "Greedy", obj.B = B.tensor.odd)
 max <-max(init[[1]]$results[, 2])
 init[[2]]$results[, 2]
 
-threshold_list = c(max + 1, init[[2]]$results[, 2][1:20])
+threshold_list = c(max + 1, init[[2]]$results[, 2][1:10])
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
 out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
@@ -171,8 +171,8 @@ text(1:length(ncps), vals, ncps, pos = 1, cex = 0.8)
 symbols(which(length(out[[1]]) == ncps)[1], out[[2]], circles = 1, add = TRUE, inches = 0.08, fg = "red")
 text(which(length(out[[1]]) == ncps)[1], out[[2]], "Knee", pos = 3, cex = 0.8, col = "red")
 
-# Thresholding using Changepoints from Greedy, top 10 Gains
-threshold_list = c(max + 1, init[[2]]$results[, 2][1:10])
+# Thresholding using Changepoints from Greedy, top 20 Gains
+threshold_list = c(max + 1, init[[2]]$results[, 2][1:20])
 results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, 75, CUSUM_res = results_all_step1, 
                                 threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
 out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)

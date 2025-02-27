@@ -54,7 +54,7 @@ plot_intervals <- function(intervals) {
   }
 }
 
-cusum_on_intervals <- function(CUSUM, obj, intervals, ...) {
+cusum_on_intervals <- function(CUSUM, obj, intervals, verbose = TRUE, ...) {
   # Fit CUSUM statistic on intervals
   # Intervals should be a list, or a single vector (which is converted)
   
@@ -67,7 +67,6 @@ cusum_on_intervals <- function(CUSUM, obj, intervals, ...) {
   }
   
   results <- matrix(nrow = nrow(intervals), ncol = 4)
-  print((results))
   colnames(results) = c("Candidates", "Gain", "Start", "End")
   
   for (i in 1:nrow(intervals)) {
@@ -79,13 +78,16 @@ cusum_on_intervals <- function(CUSUM, obj, intervals, ...) {
     e = intervals[i, 2]
     for (t in (s+1):(e-1)) {
       # Calculate candidate and maximal gain, keep s and e
-      gain <- CUSUM(obj, s, e, t, ...)  # Pass additional arguments to CUSUM 
+      gain <- CUSUM(obj, s, e, t, verbose, ...)  # Pass additional arguments to CUSUM 
       if (gain > max_gain) {
         max_gain <- gain
         candidate <- t
       }
     }
-    print(paste0("candidate = ", t, ", max_gain = ", gain, ", s = ", s, ", e = ", e, ", interval = ", i, "."))
+    
+    if (verbose) {
+      print(paste0("candidate = ", t, ", max_gain = ", gain, ", s = ", s, ", e = ", e, ", interval = ", i, "."))
+    }
     results[i, ] <- c(candidate, max_gain, s, e)
   }
   
@@ -93,7 +95,8 @@ cusum_on_intervals <- function(CUSUM, obj, intervals, ...) {
   
 }
 
-seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2), m = 4, method = "Greedy", CUSUM_res = NULL, ...) {
+seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2), m = 4, method = "Greedy", 
+                              CUSUM_res = NULL, verbose = TRUE, ...) {
   # Method can be "Greedy" or "Narrowest"
     # Greedy selects the highest Gain over the threshold first
     # Narrowest selects shorted interval with Gain over threshold first
@@ -108,7 +111,7 @@ seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2)
   
   if (is.null(CUSUM_res)) {
     intervals <- construct_intervals(T, alpha, m)
-    results <- cusum_on_intervals(CUSUM, obj, intervals, ...)
+    results <- cusum_on_intervals(CUSUM, obj, intervals, verbose, ...)
   } else {
     results <- CUSUM_res
   }
@@ -126,11 +129,14 @@ seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2)
     index_list <- numeric()
     i = 1
     cur_thres_idx = 1
-    cat("Number of rows ", nrow(results), "\n")
-    cat("Number of thresholds ", length(threshold), "\n")
     
+    if (verbose) {
+      cat("Number of rows ", nrow(results), "\n")
+      cat("Number of thresholds ", length(threshold), "\n")
+    }
+
     while(i <= nrow(results) && cur_thres_idx <= length(threshold)){
-      cat("row ", i, " with threshold index", cur_thres_idx, "\n")
+      if (verbose) {cat("row ", i, " with threshold index", cur_thres_idx, "\n")}
       # Go to next threshold (if threshold too large)
       # Select candidate (if above threshold and not covered yet)
       # Next row (if above threshold but covered)
@@ -165,7 +171,6 @@ seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2)
       index_list <- numeric()
       i = 1
       while(i <= nrow(results)){
-        print(i)
         if (results[i, 2] > band && all(results[index_list, 1] < results[i, 3] | 
                                         results[index_list, 1] > results[i, 4])) {
           index_list <- c(index_list, i)

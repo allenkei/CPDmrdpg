@@ -74,10 +74,10 @@ estimate_thpca <- function(Y.tensor, hat.rank, tmax = 20){
 # CUSUM Statistics #
 ####################
 
-CUSUM_frobenius <- function(obj, s, e, t, rank) {
+CUSUM_frobenius <- function(obj, s, e, t, rank, verbose = TRUE) {
   # Frobenius norm hat{P}^{s,t}, hat{P}^{s+1,t}
   # hat{P}^{a,b} = TH-PCA((b-a)^{-1}  \sum_{u =a}^b A(u) ,(d,d,m))
-  print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))
+  if (verbose) {print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))}
   
   sum_s_t  <- (1/(t-s)) * as.tensor( apply(obj[(s+1):t, , , ], c(2, 3, 4), sum) )
   sum_t_e <- (1/(e-t)) * as.tensor( apply(obj[(t+1):e, , , ], c(2, 3, 4), sum) )
@@ -88,11 +88,11 @@ CUSUM_frobenius <- function(obj, s, e, t, rank) {
   return(diff_frobenius(P_s_t, P_t_e))
 }
 
-CUSUM_layer <- function(obj, s, e, t, rank) {
+CUSUM_layer <- function(obj, s, e, t, rank, verbose = TRUE) {
   # Layer-wise Frobenius norm 
   # max_l hat{P}^{s,t}_(l), hat{P}^{s+1,t}_(l)
   # hat{P}^{a,b} = TH-PCA((b-a)^{-1}  \sum_{u =a}^b A(u) ,(d,d,m))
-  print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))
+  if (verbose) {print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))}
   
   sum_s_t  <- (1/(t-s)) * as.tensor( apply(obj[(s+1):t, , , ], c(2, 3, 4), sum) )
   sum_t_e <- (1/(e-t)) * as.tensor( apply(obj[(t+1):e, , , ], c(2, 3, 4), sum) )
@@ -107,12 +107,12 @@ CUSUM_layer <- function(obj, s, e, t, rank) {
   return(max(frobenius_diffs))
 }
 
-CUSUM_frob_SBS <- function(obj, s, e, t, rank) {
+CUSUM_frob_SBS <- function(obj, s, e, t, rank, verbose = TRUE) {
   # Frobenius norm Using Weighting suggested in SBS
   # || sqrt((e-t)/((e-s)(t-s))) hat{P}^{s,t}, sqrt((t-s)/((e-s)(e-t))) hat{P}^{s+1,t}||
   # Using Weighting suggested in SBS
   # hat{P}^{a,b} = TH-PCA(\sum_{u =a}^b A(u) ,(d,d,m))
-  print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))
+  if (verbose) {print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))}
   
   sum_s_t  <- as.tensor( apply(obj[(s+1):t, , , ], c(2, 3, 4), sum) )
   sum_t_e <- as.tensor( apply(obj[(t+1):e, , , ], c(2, 3, 4), sum) )
@@ -123,14 +123,15 @@ CUSUM_frob_SBS <- function(obj, s, e, t, rank) {
   return(diff_frobenius(P_s_t, P_t_e))
 }
 
-CUSUM_step1 <- function(obj, s, e, t, obj.B) {
+CUSUM_step1 <- function(obj, s, e, t, obj.B, verbose = TRUE) {
   # Tensor Weighted Inner Product
   # Two identical copies A and B (e.g. odd and even indices)
   # tilde{A}^{s,e}(t) = sum_{u=s+1}^{e} omega_{s,e}^t(u) A(u), same for B
   # omega_{s,e}^t(u) = ifelse(u in (s+1):t, sqrt((e-t)/((e-s)*(t-s))), -sqrt((t-s)/((e-s)*(e-t)))
   # hat{D}^{s,e}(t) = \sum_{i,j,l=1}^{n,n,L} tilde{A}^{s,e}(t)_{i,j,l} tilde{B}^{s,e}(t)_{i,j,l} 
   
-  print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))
+  if (verbose) {print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))}
+
   if (!all(dim(obj) == dim(obj.B))) {
     stop("Error: obj (A) and obj.B (B) must have the same dimensions.")
   }

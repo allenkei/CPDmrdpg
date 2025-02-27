@@ -1,7 +1,7 @@
 library(rTensor)
 source("SBS.R")
 source("CUSUM.R")
-source("utility.R")
+source("model_selection.R")
 source("eval.R")
 #library(devtools) # install.packages("devtools")
 #install_github("etam4260/kneedle") # install the package "kneedle" via "devtools"
@@ -38,6 +38,7 @@ output_holder <- matrix(NA, nrow = num_seq, ncol = 4) # 4 metrics
 
 
 # report mean of metric for all simulated sequences
+# can suppress print statements with verbose = FALSE (default TRUE)
 for(seq_iter in 1:num_seq){
   
   if(seq_iter == 6) break
@@ -51,26 +52,27 @@ for(seq_iter in 1:num_seq){
   # CUSUM_step1 is a FUNC from CUSUM.R
   # obtain CP candidate for each interval
   # (Comment: add verbose = TRUE)
-  results_all_step1 <- cusum_on_intervals(CUSUM_step1, A.tensor.even, intervals, obj.B = B.tensor.odd)
+  results_all_step1 <- cusum_on_intervals(CUSUM_step1, A.tensor.even, intervals, verbose = TRUE, obj.B = B.tensor.odd)
   
   # CUSUM_step1 is a FUNC from CUSUM.R
   # obtain initial result for threshold
   # (Comment: add verbose = TRUE)
   init <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = results_all_step1, 
-                            threshold = 0, method = "Greedy", obj.B = B.tensor.odd)
+                            threshold = 0, method = "Greedy", verbose = TRUE, obj.B = B.tensor.odd)
   
   # construct list of threshold
   max <- max(init[[1]]$results[, 2])
-  threshold_list = c(max + 1, init[[2]]$results[, 2][1:20]) # Question: why 20?
+  threshold_list = c(max + 1, init[[2]]$results[, 2][1:10]) # Maximum number of changepoints 
   
   
   results_ms <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = results_all_step1, 
-                                  threshold = threshold_list, method = "Greedy", obj.B = B.tensor.odd)
+                                  threshold = threshold_list, method = "Greedy", verbose = TRUE, obj.B = B.tensor.odd)
   
   
   # Model selection
+  # Currently, all methods need hat.rank
   # (Comment: add verbose = TRUE)
-  out <- model_selection(results_ms, A.tensor, method = "elbow", hat.rank = hat.rank)
+  out <- model_selection(results_ms, A.tensor, method = "elbow", verbose = TRUE, hat.rank = hat.rank)
   
   
   # Visualization

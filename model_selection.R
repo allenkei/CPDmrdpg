@@ -38,7 +38,7 @@ cal_log_lik <- function(Y, detected_CP, hat.rank){
   return(log_lik_full)
 }
 
-BIC <- function(Y, detected_CP, hat.rank){
+BIC <- function(Y, detected_CP, verbose, hat.rank){
   
   # BIC = −2log_lik + log(T*N_net) × num_par_within × (K+1)
   # Y: data with size (T, n, n, l)
@@ -55,12 +55,14 @@ BIC <- function(Y, detected_CP, hat.rank){
   num_data <- num_T * n_node * n_node * num_layer # Why not just num_T? 
   
   BIC <- (-2) * log_lik_full + log(num_data) * num_par_within * (length(detected_CP)+1)
-  cat("Candidates: ", paste(detected_CP, collapse = ", "), ". BIC = ", BIC, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
+  if(verbose) {
+    cat("Candidates: ", paste(detected_CP, collapse = ", "), ". BIC = ", BIC, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
+  }
   
   return(BIC) # choose the threshold (and corresponding results) with lowest BIC
 }
 
-MDL <- function(Y, detected_CP, hat.rank){
+MDL <- function(Y, detected_CP, verbose, hat.rank){
   
   # 1. The penalty of a real-valued parameter estimated by n data points is log2 n;
   # 2. The penalty of an unbounded integer parameter K is 2 log2 K;
@@ -78,24 +80,26 @@ MDL <- function(Y, detected_CP, hat.rank){
   K <- length(detected_CP)
   p <- n_node*hat.rank[1]*hat.rank[2] + n_node*hat.rank[2]*hat.rank[3] + n_node*hat.rank[1]*hat.rank[3]
   
-  penalty <- 2 * log(max(K, 1)) + 2*K*log(num_T) # should be num_data <- num_T * n_node * n_node * num_layer? 
+  penalty <- 2 * log(max(K, 1)) + 2*K*log(num_T * n_node * n_node * num_layer) 
   CP <- c(detected_CP, num_T) # add the last time point # i.e. c(50, 100, 150)
   
   start_t <- 0
   for (i in 1:length(CP)) {
     
     end_t <- CP[i] 
-    penalty <- penalty + p*log(end_t - start_t)
+    penalty <- penalty + p*log(n_node * n_node * num_layer * (end_t - start_t))
     start_t <- end_t # make sure to update start_t
   }
   
   MDL <- (-2) * log_lik_full + penalty
-  cat("Candidates: ", paste(detected_CP, collapse = ", "), ". MDL = ", MDL, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
-  
+  if(verbose) {
+    cat("Candidates: ", paste(detected_CP, collapse = ", "), ". MDL = ", MDL, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
+  }
+
   return(MDL) # choose the threshold (and corresponding results) with lowest MDL
 }
 
-AIC <- function(Y, detected_CP, hat.rank){
+AIC <- function(Y, detected_CP, verbose, hat.rank){
   
   # AIC = −2log_lik + 2 x (T*N_net) × num_par_within × (K+1)
   # Y: data with size (T, n, n, l)
@@ -110,12 +114,14 @@ AIC <- function(Y, detected_CP, hat.rank){
   num_par_within <- n_node*hat.rank[1]*hat.rank[2] + n_node*hat.rank[2]*hat.rank[3] + n_node*hat.rank[1]*hat.rank[3]
   
   AIC <- (-2) * log_lik_full + 2 * num_par_within * (length(detected_CP)+1)
-  cat("Candidates: ", paste(detected_CP, collapse = ", "), ". AIC = ", AIC, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
+  if(verbose) {
+    cat("Candidates: ", paste(detected_CP, collapse = ", "), ". AIC = ", AIC, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
+  }
   
   return(AIC) # choose the threshold (and corresponding results) with lowest AIC
 }
 
-l1 <- function(Y, detected_CP, hat.rank, beta = 2){
+l1 <- function(Y, detected_CP, verbose, hat.rank, beta = 2){
   
   # BIC = −2log_lik + 2 sum || hat{P}^{s,t}, hat{P}^{s+1,t} ||_1
   # Y: data with size (T, n, n, l)
@@ -155,21 +161,23 @@ l1 <- function(Y, detected_CP, hat.rank, beta = 2){
       P_bottom <- P_top
     }
   }
-  
-  cat("Candidates: ", paste(detected_CP, collapse = ", "), ". Penalty = ", penalty, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
-  
+  if(verbose) {  
+    cat("Candidates: ", paste(detected_CP, collapse = ", "), 
+        ". Penalty = ", penalty, ". log-Likelihood = ", log_lik_full, "\n", sep = "")
+  }
+
   return(-log_lik_full + beta * penalty) # choose the threshold (and corresponding results) with lowest BIC
 }
 
-elbow <- function(obj, cps, hat.rank) {
+elbow <- function(obj, cps, verbose, hat.rank) {
   # https://raghavan.usc.edu/papers/kneedle-simplex11.pdf
   log_lik <- cal_log_lik(obj, cps, hat.rank)
-  cat("Candidates: ", paste(cps, collapse = ", "), ". log-Likelihood = ", log_lik, "\n", sep = "")
+  if (verbose) {cat("Candidates: ", paste(cps, collapse = ", "), ". log-Likelihood = ", log_lik, "\n", sep = "")}
   
   return(log_lik)
 }
 
-model_selection <- function(results, obj, method = "BIC", ...) {
+model_selection <- function(results, obj, method = "BIC", verbose = "TRUE", ...) {
   # Using results constructed from Seeded Binary Segmentation, 
   # calculates model selection statistic, and selects best model.
   # The best model is the highest threshold minimizer of the statistic.
@@ -190,7 +198,7 @@ model_selection <- function(results, obj, method = "BIC", ...) {
   for (i in 2:length(results)) {
     # Print Statement Handled Inside fun()
     cps <- 2 * sort(results[[i]]$results[, 1])
-    stats[i-1] <- fun(obj, cps, ...)
+    stats[i-1] <- fun(obj, cps, verbose, ...)[1] # This allows other methods to return more arguments 
     num_cps[i-1] <- length(cps)
     
     # Store best model based on minimum Stat
