@@ -12,7 +12,7 @@ library(kneedle)
 # DEMO #
 ########
 
-# load("data/seq10n50s1.RData") # Scenario 1 with node 50
+load("data/seq10n50s4.RData") # Scenario 1 with node 50
 # load("data/seq10n100s1.RData") # Scenario 1 with node 100
 # load("data/seq10n50s2.RData") # Scenario 2 with node 50
 # load("data/seq10n100s2.RData") # Scenario 2 with node 100
@@ -92,5 +92,5 @@ for(seq_iter in 1:num_seq){
   output_holder[seq_iter ,] <- c(metric_list[[1]], metric_list[[2]], metric_list[[3]], metric_list[[4]])
   
 }
-
+results_ms[[10]]
 

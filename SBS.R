@@ -17,7 +17,7 @@ construct_intervals <- function(T, alpha = sqrt(1/2), m = 4) {
     
     for (i in 1:nk) {
       start <- floor((i - 1) * sk)
-      end <- ceiling((i - 1) * sk + lk)
+      end <- min(ceiling((i - 1) * sk + lk), T)
       
       # In case of lk < m, but ceiling(lk) = m
       # some intervals may still have length = m 
@@ -27,7 +27,6 @@ construct_intervals <- function(T, alpha = sqrt(1/2), m = 4) {
     }
     
   }
-
   # Eliminate any overlapping or duplicate intervals
   return(unique(intervals))
 }
