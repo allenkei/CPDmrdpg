@@ -12,7 +12,7 @@ library(kneedle)
 # DEMO #
 ########
 
-load("data/seq10n50s4.RData") # Scenario 1 with node 50
+load("data/seq10n50s3.RData") # Scenario 1 with node 50
 # load("data/seq10n100s1.RData") # Scenario 1 with node 100
 # load("data/seq10n50s2.RData") # Scenario 2 with node 50
 # load("data/seq10n100s2.RData") # Scenario 2 with node 100
@@ -24,13 +24,11 @@ dim(A.all_seq) # 10 150  50  50   4
 num_seq <- dim(A.all_seq)[1] # 10 sequences
 num_T <- dim(A.all_seq)[2] # 150 time points
 hat.rank <- c(15, 15, 15) # needed for model selection (Question: should be used as input to some FUNC)
-true_CP <- c(50,100)
-
-
+true_CP <- c(50,100) # QUESTION: Doesn't this need to be changed per scenario? 
 
 # construct intervals (FIXED for all sequences)
 intervals <- construct_intervals(num_T/2, sqrt(1/2), 2) # half of full time span
-
+intervals[298, ]
 
 seq_iter <- 1 # used to test INSIDE the for-loop
 
@@ -39,15 +37,15 @@ output_holder <- matrix(NA, nrow = num_seq, ncol = 4) # 4 metrics
 
 # report mean of metric for all simulated sequences
 # can suppress print statements with verbose = FALSE (default TRUE)
-for(seq_iter in 1:num_seq){
+for(seq_iter in 2:num_seq){
   
-  if(seq_iter == 6) break
+  if(seq_iter == 6) break # QUESTION: Why is this here? 
   
   A.tensor <- A.all_seq[seq_iter,,,,] # a particular sequence with dim 150  50  50   4
   
   # splitting data in half
-  A.tensor.even <- A.tensor[seq(2, 150, by = 2), , , ]
-  B.tensor.odd  <- A.tensor[seq(1, 149, by = 2), , , ] # named as B.tensor
+  A.tensor.even <- A.tensor[seq(2, num_T, by = 2), , , ]
+  B.tensor.odd  <- A.tensor[seq(1, num_T-1, by = 2), , , ] # named as B.tensor
   
   # CUSUM_step1 is a FUNC from CUSUM.R
   # obtain CP candidate for each interval
@@ -90,7 +88,7 @@ for(seq_iter in 1:num_seq){
   cat("metrics: ",metric_list[[1]], metric_list[[2]], metric_list[[3]], metric_list[[4]])
   
   output_holder[seq_iter ,] <- c(metric_list[[1]], metric_list[[2]], metric_list[[3]], metric_list[[4]])
-  
+  # break
 }
 results_ms[[10]]
-
+true_CP
