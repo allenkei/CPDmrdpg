@@ -19,16 +19,17 @@ load("data/seq10n50s3.RData") # Scenario 1 with node 50
 
 dim(A.all_seq) # 10 150  50  50   4
 
-
-
 num_seq <- dim(A.all_seq)[1] # 10 sequences
 num_T <- dim(A.all_seq)[2] # 150 time points
+num_node <- dim(A.all_seq)[3] 
+num_layer <- dim(A.all_seq)[5] 
 hat.rank <- c(15, 15, 15) # needed for model selection (Question: should be used as input to some FUNC)
-true_CP <- c(50,100) # QUESTION: Doesn't this need to be changed per scenario? 
+true_CP <- c(50,100) # Manually Change
+
+threshold <- num_node*num_layer*sqrt(log(num_T))
 
 # construct intervals (FIXED for all sequences)
 intervals <- construct_intervals(num_T/2, sqrt(1/2), 2) # half of full time span
-intervals[298, ]
 
 seq_iter <- 1 # used to test INSIDE the for-loop
 
@@ -37,9 +38,9 @@ output_holder <- matrix(NA, nrow = num_seq, ncol = 4) # 4 metrics
 
 # report mean of metric for all simulated sequences
 # can suppress print statements with verbose = FALSE (default TRUE)
-for(seq_iter in 2:num_seq){
+for(seq_iter in 4:num_seq){
   
-  if(seq_iter == 6) break # QUESTION: Why is this here? 
+  # if(seq_iter == 6) break 
   
   A.tensor <- A.all_seq[seq_iter,,,,] # a particular sequence with dim 150  50  50   4
   
@@ -88,7 +89,9 @@ for(seq_iter in 2:num_seq){
   cat("metrics: ",metric_list[[1]], metric_list[[2]], metric_list[[3]], metric_list[[4]])
   
   output_holder[seq_iter ,] <- c(metric_list[[1]], metric_list[[2]], metric_list[[3]], metric_list[[4]])
-  # break
+  break
 }
-results_ms[[10]]
-true_CP
+
+out[[1]]
+results_ms[[12]]
+
