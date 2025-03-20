@@ -1,3 +1,7 @@
+#library(devtools) # install.packages("devtools")
+#install_github("etam4260/kneedle") # install the package "kneedle" via "devtools"
+library(kneedle)
+
 cal_log_lik <- function(Y, detected_CP, hat.rank){
   # Y: data with size (T, n, n, l)
   # detected_CP: vector of change points (cp1, cp2, ..., cpk) from a particular threshold # i.e. c(50,100)
