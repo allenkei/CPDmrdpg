@@ -1,6 +1,7 @@
 ##########################
 # Change Point Detection #
 ##########################
+source("utility.R")
 
 # Contains functions required to compute CUSUM Statistics
 # And current styles of CUSUM Statistics considered
@@ -55,7 +56,7 @@ Tensor_Hetero_PCA_test <- function(Y, r, tmax = 20){
   return(U_0)
 }
 
-estimate_thpca <- function(Y.tensor, hat.rank, tmax = 20){
+estimate_thpca <- function(Y.tensor, hat.rank, ub = 1, lb = 0, tmax = 20){
   U.hat = Tensor_Hetero_PCA_test(Y.tensor, hat.rank, tmax)
   P.U1 = U.hat[[1]]%*%t(U.hat[[1]])
   P.U2 = U.hat[[2]]%*%t(U.hat[[2]])
@@ -64,8 +65,8 @@ estimate_thpca <- function(Y.tensor, hat.rank, tmax = 20){
   
   P_hat  = Y.hat@data
   
-  P_hat[P_hat > 1]  = 1 - 1e-10
-  P_hat[P_hat < 0]  = 0 + 1e-10
+  P_hat[P_hat > ub]  = ub - 1e-10
+  P_hat[P_hat < lb]  = lb + 1e-10
   
   return(P_hat)
 }
@@ -79,8 +80,8 @@ CUSUM_frobenius <- function(obj, s, e, t, rank, verbose = TRUE) {
   # hat{P}^{a,b} = TH-PCA((b-a)^{-1}  \sum_{u =a}^b A(u) ,(d,d,m))
   if (verbose) {print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))}
   
-  sum_s_t  <- (1/(t-s)) * as.tensor( apply(obj[(s+1):t, , , ], c(2, 3, 4), sum) )
-  sum_t_e <- (1/(e-t)) * as.tensor( apply(obj[(t+1):e, , , ], c(2, 3, 4), sum) )
+  sum_s_t  <- (1/(t-s)) * as.tensor( apply(obj[(s+1):t, , , , drop = FALSE], c(2, 3, 4), sum) )
+  sum_t_e <- (1/(e-t)) * as.tensor( apply(obj[(t+1):e, , , , drop = FALSE], c(2, 3, 4), sum) )
   
   P_s_t  <- estimate_thpca(sum_s_t, rank, tmax = 20)
   P_t_e <- estimate_thpca(sum_t_e, rank, tmax = 20)
@@ -94,8 +95,8 @@ CUSUM_layer <- function(obj, s, e, t, rank, verbose = TRUE) {
   # hat{P}^{a,b} = TH-PCA((b-a)^{-1}  \sum_{u =a}^b A(u) ,(d,d,m))
   if (verbose) {print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))}
   
-  sum_s_t  <- (1/(t-s)) * as.tensor( apply(obj[(s+1):t, , , ], c(2, 3, 4), sum) )
-  sum_t_e <- (1/(e-t)) * as.tensor( apply(obj[(t+1):e, , , ], c(2, 3, 4), sum) )
+  sum_s_t  <- (1/(t-s)) * as.tensor( apply(obj[(s+1):t, , , , drop = FALSE], c(2, 3, 4), sum) )
+  sum_t_e <- (1/(e-t)) * as.tensor( apply(obj[(t+1):e, , , , drop = FALSE], c(2, 3, 4), sum) )
   
   P_s_t  <- estimate_thpca(sum_s_t, rank, tmax = 20)
   P_t_e  <- estimate_thpca(sum_t_e, rank, tmax = 20)
@@ -114,8 +115,8 @@ CUSUM_frob_SBS <- function(obj, s, e, t, rank, verbose = TRUE) {
   # hat{P}^{a,b} = TH-PCA(\sum_{u =a}^b A(u) ,(d,d,m))
   if (verbose) {print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))}
   
-  sum_s_t  <- as.tensor( apply(obj[(s+1):t, , , ], c(2, 3, 4), sum) )
-  sum_t_e <- as.tensor( apply(obj[(t+1):e, , , ], c(2, 3, 4), sum) )
+  sum_s_t  <- as.tensor( apply(obj[(s+1):t, , , , drop = FALSE], c(2, 3, 4), sum) )
+  sum_t_e <- as.tensor( apply(obj[(t+1):e, , , , drop = FALSE], c(2, 3, 4), sum) )
   
   P_s_t  <- sqrt((e-t)/(e-s)/(t-s)) * estimate_thpca(sum_s_t, rank, tmax = 20)
   P_t_e <- sqrt((t-s)/(e-s)/(e-t)) * estimate_thpca(sum_t_e, rank, tmax = 20)
@@ -129,7 +130,6 @@ CUSUM_step1 <- function(obj, s, e, t, obj.B, verbose = TRUE) {
   # tilde{A}^{s,e}(t) = sum_{u=s+1}^{e} omega_{s,e}^t(u) A(u), same for B
   # omega_{s,e}^t(u) = ifelse(u in (s+1):t, sqrt((e-t)/((e-s)*(t-s))), -sqrt((t-s)/((e-s)*(e-t)))
   # hat{D}^{s,e}(t) = \sum_{i,j,l=1}^{n,n,L} tilde{A}^{s,e}(t)_{i,j,l} tilde{B}^{s,e}(t)_{i,j,l} 
-  
   if (verbose) {print(paste0("s = ", s, ", e = ", e, ", t = ", t, "."))}
 
   if (!all(dim(obj) == dim(obj.B))) {
@@ -144,7 +144,7 @@ CUSUM_step1 <- function(obj, s, e, t, obj.B, verbose = TRUE) {
   for (u in (t+1):e) {
     omega[u - s] <- -sqrt((t - s) / ((e - s) * (e - t)))
   }
-  
+
   weighted_A <- array(0, dim = dim(obj)[2:4])
   weighted_B <- array(0, dim = dim(obj)[2:4])
   
@@ -155,7 +155,125 @@ CUSUM_step1 <- function(obj, s, e, t, obj.B, verbose = TRUE) {
   
   # Compute the CUSUM statistic as an inner product sum
   D_hat <- abs(sum(weighted_A * weighted_B))
-  
   return(D_hat)
 }
 
+####################
+# Local Refinement #
+####################
+
+
+CUSUM_refinement <- function(obj, s, e, t, obj.B, nu, rank) {
+  # CUSUM local refinement (Def)
+  # Two identical copies A and B (e.g. odd and even indices)
+  # tilde{A}^{s,e}(t) = sum_{u=s+1}^{e} omega_{s,e}^t(u) A(u), same for B
+  # omega_{s,e}^t(u) = ifelse(u in (s+1):t, sqrt((e-t)/((e-s)*(t-s))), -sqrt((t-s)/((e-s)*(e-t)))
+  # hat{P}^{s,e}(nu) = estimate_thpca(tilde{A}^{s,e}(nu), rank, ub, lb)
+  # hat{D}^{s,e}(t) = ||hat{P}^{s,e}(nu)||^{-1} \sum_{i,j,l=1}^{n,n,L} tilde{A}^{s,e}(t)_{i,j,l} hat{P}^{s,e}(nu)_{i,j,l} 
+  
+  if (!all(dim(obj) == dim(obj.B))) {
+    stop("Error: obj (A) and obj.B (B) must have the same dimensions.")
+  }
+  
+  # tilde A
+  omega_A <- numeric(e - s)
+  for (u in (s+1):t) {
+    omega_A[u - s] <- sqrt((e - t) / ((e - s) * (t - s)))
+  }
+  for (u in (t+1):e) {
+    omega_A[u - s] <- -sqrt((t - s) / ((e - s) * (e - t)))
+  }
+  
+  omega_B <- numeric(e - s)
+  for (u in (s+1):nu) {
+    omega_B[u - s] <- sqrt((e - nu) / ((e - s) * (nu - s)))
+  }
+  for (u in (nu+1):e) {
+    omega_B[u - s] <- -sqrt((nu - s) / ((e - s) * (e - nu)))
+  }
+  
+  weighted_A <- array(0, dim = dim(obj)[2:4])
+  weighted_B <- array(0, dim = dim(obj.B)[2:4])
+  for (u in (s+1):e) {
+    weighted_A <- weighted_A + omega_A[u - s] * obj[u, , , ]
+    weighted_B <- weighted_B + omega_B[u - s] * obj[u, , , ]
+  }
+  
+  P_hat <- estimate_thpca(as.tensor(weighted_B), rank, 2*sqrt((e-nu)*(nu-s)/(e-s)), 0)
+  D_hat <- 1/(sum((P_hat)^2)^0.5)*abs(sum(P_hat * weighted_A))
+  return(D_hat)
+}
+
+refinement1 <- function(detected_CP, A, B, rank, verbose = FALSE) {
+  K <- length(detected_CP)
+  if(K == 0) {return(detected_CP)}
+  
+  nu <- c(0, detected_CP, dim(A)[1])
+  b <- nu
+  
+  for (k in 2:(K+1)) {
+    sk <- floor((nu[k-1]+nu[k])/2)
+    ek <- ceiling((nu[k+1]+nu[k])/2)
+    if (verbose) {
+      cat("k = ", k, ", nu[c(k-1, k, k+1)] = ", nu[c(k-1, k, k+1)], ", sk = ", sk, ", ek = ", ek, ".\n")
+    }
+    
+    max_gain <- 0
+    
+    if ((ek-sk) > 1) {
+      for (t in (sk+1):(ek-1)) {
+        gain <- CUSUM_refinement(A, sk, ek, t, B, nu[k], rank)
+        if (verbose) {
+          cat("\tsk = ", sk, ", ek = ", ek, ", t = ", t, ", gain = ", gain, ".\n")
+        }
+        if (gain > max_gain) {
+          max_gain <- gain
+          b[k] <- t
+        }
+      }
+    } 
+  }
+  
+  return(b[2:(K+1)])
+}
+
+refinement2 <- function(detected_CP, A, B, rank, verbose = FALSE) {
+  K <- length(detected_CP)
+  if(K == 0) {return(detected_CP)}
+  
+  nu <- c(0, detected_CP, dim(A)[1])
+  eta_bar <- nu
+  for (k in 2:(K+1)) {
+    sk <- floor(9*nu[k-1]/10 + nu[k]/10)
+    ek <- ceiling(nu[k]/10 + 9*nu[k+1]/10)
+    if (verbose) {
+      cat("k = ", k, ", nu[c(k-1, k, k+1)] = ", nu[c(k-1, k, k+1)], ", sk = ", sk, ", ek = ", ek, ".\n")
+    }
+    
+    min_Qk <- Inf
+    
+    if ((ek-sk) > 1) {
+      for (eta in (sk+1):(ek-1)) {
+        B_nu_prev <- (1/(nu[k]-nu[k-1])) * as.tensor( apply(B[(nu[k-1]+1):nu[k], , , , drop = FALSE], c(2, 3, 4), sum) )
+        B_nu_next <- (1/(nu[k+1]-nu[k])) * as.tensor( apply(B[(nu[k]+1):nu[k+1], , , , drop = FALSE], c(2, 3, 4), sum) )
+        
+        P_nu_prev <- estimate_thpca(B_nu_prev, rank, tmax = 20)
+        P_nu_next <- estimate_thpca(B_nu_next, rank, tmax = 20)
+        
+        Qk <- sum(c(vapply( (sk+1):eta, function(t) (diff_frobenius(A[t, , , ], P_nu_prev))^2, numeric(1) ), 
+                    vapply( (eta+1):ek, function(t) (diff_frobenius(A[t, , , ], P_nu_next))^2, numeric(1) )))
+        
+        if (verbose) {
+          cat("\tsk = ", sk, ", ek = ", ek, ", eta = ", eta, ", Qk = ", Qk, ".\n")
+        }
+        if (Qk < min_Qk) {
+          min_Qk <- Qk
+          eta_bar[k] <- eta
+        }
+      }
+    } 
+  }
+  return(eta_bar[2:(K+1)])
+  
+}
+    

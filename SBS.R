@@ -71,21 +71,25 @@ cusum_on_intervals <- function(CUSUM, obj, intervals, verbose = TRUE, ...) {
   for (i in 1:nrow(intervals)) {
     # Calculate candidate and maximal gain, keep s and e
     max_gain = 0
-    candidate = NULL
+    candidate = NA
     
-    s = intervals[i, 1]
-    e = intervals[i, 2]
-    for (t in (s+1):(e-1)) {
-      # Calculate candidate and maximal gain, keep s and e
-      gain <- CUSUM(obj, s, e, t, verbose, ...)  # Pass additional arguments to CUSUM 
-      if (gain > max_gain) {
-        max_gain <- gain
-        candidate <- t
+    epsilon <- ceiling((intervals[i, 2]-intervals[i, 1])/64)
+    s = intervals[i, 1] + epsilon
+    e = intervals[i, 2] - epsilon
+
+    if ((e-s) > 1) {
+      for (t in (s+1):(e-1)) {
+        # Calculate candidate and maximal gain, keep s and e
+        gain <- CUSUM(obj, s, e, t, verbose, ...)  # Pass additional arguments to CUSUM 
+        if (gain > max_gain) {
+          max_gain <- gain
+          candidate <- t
+        }
       }
     }
     
     if (verbose) {
-      print(paste0("candidate = ", t, ", max_gain = ", gain, ", s = ", s, ", e = ", e, ", interval = ", i, "."))
+      print(paste0("candidate = ", candidate, ", max_gain = ", max_gain, ", s = ", s, ", e = ", e, ", interval = ", i, "."))
     }
     results[i, ] <- c(candidate, max_gain, s, e)
   }
