@@ -3,7 +3,7 @@ source("utility.R")
 set.seed(123)
 
 
-scenario <- "s1" # "s1","s2","s3","s4", "s5"
+scenario <- "s3" # "s1","s2","s3","s4", "s5"
 num_node <- 50 # 50, 100
 num_seq <- 10
 
@@ -38,7 +38,7 @@ if(scenario == "s1"){
 }else if(scenario == "s3"){
   
   # COMBINE s1 and s2 WITH LONGER TIME SPAN
-  num_time <- 400 # longer time span
+  num_time <- 300 # longer time span
   num_layer <- 4
   
   # BLOCK NUMBER K CHANGED
@@ -152,15 +152,15 @@ if(scenario == "s1"){
     
     A.tensor <- array(NA, c(num_time, num_node, num_node, num_layer)) # 1 sequence
     
-    # T from 1 to 400 (otherwise change the for loop)
+    # T from 1 to 300 (otherwise change the for loop)
     for(t_iter in 1:50) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
     for(t_iter in 51:100) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_2)
     for(t_iter in 101:150) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
     for(t_iter in 151:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_2)
     for(t_iter in 201:250) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_1)
     for(t_iter in 251:300) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_2)
-    for(t_iter in 301:350) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
-    for(t_iter in 351:400) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_2)
+    # for(t_iter in 301:350) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
+    # for(t_iter in 351:400) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_2)
     
     A.all_seq[seq_iter,,,,] <- A.tensor
   }; rm(seq_iter, A.tensor)

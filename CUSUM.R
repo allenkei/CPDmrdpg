@@ -199,7 +199,7 @@ CUSUM_refinement <- function(obj, s, e, t, obj.B, nu, rank) {
     weighted_B <- weighted_B + omega_B[u - s] * obj[u, , , ]
   }
   
-  P_hat <- estimate_thpca(as.tensor(weighted_B), rank, 2*sqrt((e-nu)*(nu-s)/(e-s)), 0)
+  P_hat <- estimate_thpca(as.tensor(weighted_B), rank, 2*sqrt((e-nu)*(nu-s)/(e-s)), -2*sqrt((e-nu)*(nu-s)/(e-s)))
   D_hat <- 1/(sum((P_hat)^2)^0.5)*abs(sum(P_hat * weighted_A))
   return(D_hat)
 }

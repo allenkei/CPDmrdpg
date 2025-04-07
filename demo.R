@@ -29,12 +29,12 @@ true_CP <- c(50,100) # Sce 2, 5
 
 threshold <- (1)*num_node*sqrt(num_layer)*(log(num_T/2))^(3/2)
 threshold
-threshold_list <- rev((1:9)/10 * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
+threshold_list <- rev((1:10)/10 * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
 threshold_list
 
 seq_iter <- 1 # used to test INSIDE the for-loop
 # output_holder <- matrix(NA, nrow = num_seq, ncol = 4) # 4 metrics
-intervals <- construct_intervals(num_T/2, sqrt(1/2), 2)
+intervals <- construct_intervals(num_T/2, sqrt(1/2), 4)
 
 output_holder_g <- array(NA, dim = c(num_seq, length(threshold_list), 4))
 output_holder_gl1 <- array(NA, dim = c(num_seq, length(threshold_list), 4))
