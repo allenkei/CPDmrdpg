@@ -5,6 +5,8 @@ library(rTensor)
 
 
 get_blockwise_const_mat <- function(n, n_c, p_1, p_2){
+  # n: num node, n_c: num block, p1: between prob, p2: inter prob
+  # output n by n matrix with same block size
   P = matrix(p_1, n, n)
   size_c = floor(n / n_c)
   
@@ -23,6 +25,8 @@ get_blockwise_const_mat <- function(n, n_c, p_1, p_2){
 
 
 get_blockwise_var_size_mat <- function(n, block_sizes, p_1, p_2){
+  # output n by n matrix with block size varied
+  # i.e. n = 10, block_sizes = c(3,7) where 3 + 7 = 10
   P = matrix(p_1, n, n)
   start_idx = 1
   
@@ -42,7 +46,11 @@ get_blockwise_var_size_mat <- function(n, block_sizes, p_1, p_2){
 
 
 
+
 get_sbm_params <- function(n, L, n_c=c(4, 4), flip_layer=TRUE){
+  
+  # output probability matrix before and after, each with (n,n L)
+  # block size fixed
   
   probability_1 = array(NA, c(n, n, L))
   probability_2 = array(NA, c(n, n, L))
@@ -72,7 +80,11 @@ get_sbm_params <- function(n, L, n_c=c(4, 4), flip_layer=TRUE){
 
 
 
+
 get_sbm_var_size_params <- function(n, L, block_sizes1, block_sizes2){
+  
+  # output probability matrix before and after, each with (n,n L)
+  # block size varied
   
   probability_1 = array(NA, c(n, n, L))
   probability_2 = array(NA, c(n, n, L))
@@ -96,7 +108,52 @@ get_sbm_var_size_params <- function(n, L, block_sizes1, block_sizes2){
 
 
 
+
+
+get_sbm_VS_FL_params <- function(n, L, block_sizes1, block_sizes2, n_c=c(4, 4)){
+  # VS: varied block sizes
+  # FL: first layer differs only # block_sizes1 and block_sizes2 apply to first layer
+  
+  # output probability matrix before and after, each with (n,n L)
+  
+  probability_1 = array(NA, c(n, n, L))
+  probability_2 = array(NA, c(n, n, L))
+  
+  prob = seq(0,1,  1/(4*L))
+  
+  # iterate over layers
+  for (layer in 1: L) 
+  {
+    
+    if(layer == 1){ # first layer
+      
+      p_1 = runif(1, prob[2*L+layer], prob[2*L+layer+1])
+      p_2 = runif(1, prob[3*L+layer], prob[3*L+layer+1])
+      
+      probability_1[, , layer] = get_blockwise_var_size_mat(n, block_sizes1, p_1, p_2)
+      probability_2[, , layer] = get_blockwise_var_size_mat(n, block_sizes2, p_1, p_2)
+      
+    } else { # rest of the layers 
+      
+      p_1 = runif(1, prob[2*L+layer], prob[2*L+layer+1])
+      p_2 = runif(1, prob[3*L+layer], prob[3*L+layer+1])
+      
+      probability_1[, , layer] = get_blockwise_const_mat(n, n_c[1], p_1, p_2)
+      probability_2[, , layer] = get_blockwise_const_mat(n, n_c[2], p_1, p_2)
+      
+    }
+    
+  }
+  
+  return(list(probability_1, probability_2))
+}
+
+
+
+
+
 generate_tensor_probability_directed <- function(n_1, n_2, L, probability){
+  # generate adjacency matrix in {0,1}
   
   dim_ = c(n_1, n_2, L)
   A = array(NA,dim_)
