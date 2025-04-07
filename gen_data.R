@@ -3,21 +3,6 @@ source("utility.R")
 set.seed(123)
 
 
-<<<<<<< Updated upstream
-scenario <- "s3" # "s1","s2","s3","s4", "s5"
-num_node <- 50 # 50, 100
-num_seq <- 10
-
-
-
-
-
-=======
-scenario <- "s6" ### "s1","s2","s3","s4","s5","s6"
-num_node <- 50 ### 50, 100
-num_seq <- 100 
->>>>>>> Stashed changes
-
 
 #######################
 # FIXED CONFIGURATION #
@@ -169,19 +154,10 @@ if(scenario == "s1"){
     # T from 1 to 300 (otherwise change the for loop)
     for(t_iter in 1:50) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
     for(t_iter in 51:100) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_2)
-<<<<<<< Updated upstream
-    for(t_iter in 101:150) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
-    for(t_iter in 151:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_2)
-    for(t_iter in 201:250) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_1)
-    for(t_iter in 251:300) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_2)
-    # for(t_iter in 301:350) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
-    # for(t_iter in 351:400) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_2)
-=======
     for(t_iter in 101:150) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_2)
     for(t_iter in 151:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_1)
     for(t_iter in 201:250) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_2)
     for(t_iter in 251:300) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
->>>>>>> Stashed changes
     
     A.all_seq[seq_iter,,,,] <- A.tensor
   }; rm(seq_iter, A.tensor)
