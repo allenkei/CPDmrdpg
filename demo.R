@@ -24,7 +24,7 @@ hat.rank <- c(15, 15, num_layer) # needed for model selection (Question: should 
 
 # true_CP <- c(40, 60) # Sce 1
 true_CP <- c(50,100) # Sce 2, 5
-# true_CP <- c(50,100,150,200,250,300,350) # Sce 3
+# true_CP <- c(50,100,150,200,250) # Sce 3
 # true_CP <- c() # Sce 4
 
 threshold <- (1)*num_node*sqrt(num_layer)*(log(num_T/2))^(3/2)

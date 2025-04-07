@@ -9,7 +9,11 @@ source("eval.R")
 ########
 
 true_CP <- c(40, 60) # Sce 1
-load("data/seq100n50s1.RData") # Scenario 1 with node 50
+# true_CP <- c(50,100) # Sce 2, 5
+# true_CP <- c(50,100,150,200,250) # Sce 3
+# true_CP <- c() # Sce 4
+
+load("data/seq10n50s1.RData") # Scenario 1 with node 50
 
 num_seq <- dim(A.all_seq)[1] # 10 sequences
 num_T <- dim(A.all_seq)[2] # 150 time points
@@ -17,8 +21,7 @@ num_node <- dim(A.all_seq)[3]
 num_layer <- dim(A.all_seq)[5] 
 hat.rank <- c(15, 15, num_layer) # needed for model selection (Question: should be used as input to some FUNC)
 
-threshold_list <- rev((1:10)/10 * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
-threshold_list
+threshold_list <- rev(c(0.2, 0.4, 0.5, 0.6, 0.8) * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
 
 seq_iter <- 1 # used to test INSIDE the for-loop
 # output_holder <- matrix(NA, nrow = num_seq, ncol = 4) # 4 metrics
@@ -57,31 +60,30 @@ for(seq_iter in 1:num_seq){
     output_holder_gl1[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_gl1, num_T))
     output_holder_gl2[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_gl2, num_T))
     
-    # cat("Threshold: ", threshold_list[i], "\n")
-    # cat("\tDetected Greedy CP  :", 2*detected_CP_g, ". Metrics: ", output_holder_g[seq_iter, i, ], "\n")
-    # cat("\tRefinement Greedy   :", 2*detected_CP_gl1, ". Metrics: ", output_holder_gl1[seq_iter, i, ], "\n")
-    # cat("\tRefinement 2 Greedy :", 2*detected_CP_gl2, ". Metrics: ", output_holder_gl2[seq_iter, i, ], "\n")
+    cat("Threshold: ", threshold_list[i], "\n")
+    cat("\tDetected Greedy CP  :", 2*detected_CP_g, ". Metrics: ", output_holder_g[seq_iter, i, ], "\n")
+    cat("\tRefinement Greedy   :", 2*detected_CP_gl1, ". Metrics: ", output_holder_gl1[seq_iter, i, ], "\n")
+    cat("\tRefinement 2 Greedy :", 2*detected_CP_gl2, ". Metrics: ", output_holder_gl2[seq_iter, i, ], "\n")
   }
   
   results_n <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = gains, verbose = FALSE,
                                  threshold = threshold_list, method = "Narrowest", obj.B = B.tensor.odd)
-  
+
   for (i in 1:length(threshold_list)) {
     detected_CP_n <- sort(results_n[[i+1]]$results[, 1])
-    
+
     detected_CP_nl1 <- refinement1(detected_CP_n, A.tensor.even, B.tensor.odd, hat.rank)
     detected_CP_nl2 <- refinement2(detected_CP_n, A.tensor.even, B.tensor.odd, hat.rank)
-    
+
     output_holder_n[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_n, num_T))
     output_holder_nl1[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_nl1, num_T))
     output_holder_nl2[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_nl2, num_T))
-    
-    # cat("Threshold: ", threshold_list[i], "\n")
-    # cat("\tDetected Narrowest CP  :", 2*detected_CP_n, ". Metrics: ", output_holder_n[seq_iter, i, ], "\n")
-    # cat("\tRefinement Narrowest   :", 2*detected_CP_nl1, ". Metrics: ", output_holder_nl1[seq_iter, i, ], "\n")
-    # cat("\tRefinement 2 Narrowest :", 2*detected_CP_nl2, ". Metrics: ", output_holder_nl2[seq_iter, i, ], "\n")
+
+    cat("Threshold: ", threshold_list[i], "\n")
+    cat("\tDetected Narrowest CP  :", 2*detected_CP_n, ". Metrics: ", output_holder_n[seq_iter, i, ], "\n")
+    cat("\tRefinement Narrowest   :", 2*detected_CP_nl1, ". Metrics: ", output_holder_nl1[seq_iter, i, ], "\n")
+    cat("\tRefinement 2 Narrowest :", 2*detected_CP_nl2, ". Metrics: ", output_holder_nl2[seq_iter, i, ], "\n")
   }
-  
 }
 
 
@@ -98,7 +100,7 @@ save(sce1_50, file = "results/sce1_50.RData")
 
 
 
-load("data/seq100n100s1.RData") # Scenario 1 with node 100
+load("data/seq10n100s1.RData") # Scenario 1 with node 100
 
 num_seq <- dim(A.all_seq)[1] # 10 sequences
 num_T <- dim(A.all_seq)[2] # 150 time points
@@ -106,7 +108,7 @@ num_node <- dim(A.all_seq)[3]
 num_layer <- dim(A.all_seq)[5] 
 hat.rank <- c(15, 15, num_layer) # needed for model selection (Question: should be used as input to some FUNC)
 
-threshold_list <- rev((1:10)/10 * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
+threshold_list <- rev(c(0.2, 0.4, 0.5, 0.6, 0.8) * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
 
 seq_iter <- 1 # used to test INSIDE the for-loop
 # output_holder <- matrix(NA, nrow = num_seq, ncol = 4) # 4 metrics
@@ -145,10 +147,10 @@ for(seq_iter in 1:num_seq){
     output_holder_gl1[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_gl1, num_T))
     output_holder_gl2[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_gl2, num_T))
     
-    # cat("Threshold: ", threshold_list[i], "\n")
-    # cat("\tDetected Greedy CP  :", 2*detected_CP_g, ". Metrics: ", output_holder_g[seq_iter, i, ], "\n")
-    # cat("\tRefinement Greedy   :", 2*detected_CP_gl1, ". Metrics: ", output_holder_gl1[seq_iter, i, ], "\n")
-    # cat("\tRefinement 2 Greedy :", 2*detected_CP_gl2, ". Metrics: ", output_holder_gl2[seq_iter, i, ], "\n")
+    cat("Threshold: ", threshold_list[i], "\n")
+    cat("\tDetected Greedy CP  :", 2*detected_CP_g, ". Metrics: ", output_holder_g[seq_iter, i, ], "\n")
+    cat("\tRefinement Greedy   :", 2*detected_CP_gl1, ". Metrics: ", output_holder_gl1[seq_iter, i, ], "\n")
+    cat("\tRefinement 2 Greedy :", 2*detected_CP_gl2, ". Metrics: ", output_holder_gl2[seq_iter, i, ], "\n")
   }
   
   results_n <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = gains, verbose = FALSE,
@@ -164,10 +166,10 @@ for(seq_iter in 1:num_seq){
     output_holder_nl1[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_nl1, num_T))
     output_holder_nl2[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_nl2, num_T))
     
-    # cat("Threshold: ", threshold_list[i], "\n")
-    # cat("\tDetected Narrowest CP  :", 2*detected_CP_n, ". Metrics: ", output_holder_n[seq_iter, i, ], "\n")
-    # cat("\tRefinement Narrowest   :", 2*detected_CP_nl1, ". Metrics: ", output_holder_nl1[seq_iter, i, ], "\n")
-    # cat("\tRefinement 2 Narrowest :", 2*detected_CP_nl2, ". Metrics: ", output_holder_nl2[seq_iter, i, ], "\n")
+    cat("Threshold: ", threshold_list[i], "\n")
+    cat("\tDetected Narrowest CP  :", 2*detected_CP_n, ". Metrics: ", output_holder_n[seq_iter, i, ], "\n")
+    cat("\tRefinement Narrowest   :", 2*detected_CP_nl1, ". Metrics: ", output_holder_nl1[seq_iter, i, ], "\n")
+    cat("\tRefinement 2 Narrowest :", 2*detected_CP_nl2, ". Metrics: ", output_holder_nl2[seq_iter, i, ], "\n")
   }
   
 }
