@@ -20,16 +20,16 @@ run_sensitivity <- function() {
   
   confirm("true_cp")
   confirm("load files for 50 and 100")
-  confirm("save files (name and location) for 50 and 100")
+  confirm("save files for 50 and 100")
   
   cat("All settings confirmed. Proceeding...\n")
   
   # true_CP <- c(40, 60) # Sce 1
-  true_CP <- c(50,100) # Sce 2, 5, 6
-  # true_CP <- c(50,100,150,200,250) # Sce 3
+  # true_CP <- c(50,100) # Sce 2, 5, 6
+  true_CP <- c(50,100,150,200,250) # Sce 3
   # true_CP <- c() # Sce 4
   
-  load("data/seq10n50s2.RData") # Scenario 1 with node 50
+  load("data/seq10n50s3.RData") # Scenario 1 with node 50
   
   num_seq <- dim(A.all_seq)[1] # 10 sequences
   num_T <- dim(A.all_seq)[2] # 150 time points
@@ -103,7 +103,7 @@ run_sensitivity <- function() {
   }
   
   
-  sce2_50 <- list(
+  sce_50 <- list(
     greedy = output_holder_g,
     greedyl1 = output_holder_gl1,
     greedyl2 = output_holder_gl2,
@@ -111,12 +111,12 @@ run_sensitivity <- function() {
     narrowestl1 = output_holder_nl1,
     narrowestl2 = output_holder_nl2
   )
-  save(sce2_50, file = "results/sce2_50.RData")
+  save(sce_50, file = "results/sce3_50.RData")
   
   
   
   
-  load("data/seq10n100s2.RData") # Scenario 1 with node 100
+  load("data/seq10n100s3.RData") # Scenario 1 with node 100
   
   num_seq <- dim(A.all_seq)[1] # 10 sequences
   num_T <- dim(A.all_seq)[2] # 150 time points
@@ -190,7 +190,7 @@ run_sensitivity <- function() {
     
   }
   
-  sce2_100 <- list(
+  sce_100 <- list(
     greedy = output_holder_g,
     greedyl1 = output_holder_gl1,
     greedyl2 = output_holder_gl2,
@@ -198,7 +198,7 @@ run_sensitivity <- function() {
     narrowestl1 = output_holder_nl1,
     narrowestl2 = output_holder_nl2
   )
-  save(sce2_100, file = "results/sce2_100.RData")
+  save(sce_100, file = "results/sce3_100.RData")
  
 }
 
