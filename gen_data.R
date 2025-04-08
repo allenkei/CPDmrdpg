@@ -1,7 +1,9 @@
 source("utility.R")
 
 set.seed(123)
-
+scenario <- "s6" ### "s1","s2","s3","s4","s5","s6"
+num_node <- 100 ### 50, 100
+num_seq <- 10
 
 
 #######################
