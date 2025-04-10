@@ -1,6 +1,8 @@
 ###########
 # Reading for node=50 
+# Use code below for node=100
 
+# ADJUST TO DESIRED RESULTS 
 load("results/sce6b_50.RData")
 
 num_thresholds <- dim(sce_50[[1]])[2]
@@ -21,6 +23,7 @@ summary_matrix
 ##########
 # Reading for node=100 
 
+# ADJUST TO DESIRED RESULTS 
 load("results/sce6_100.RData")
 
 num_thresholds <-  dim(sce_100[[1]])[2]

@@ -2,7 +2,7 @@ source("utility.R")
 
 set.seed(123)
 scenario <- "s6b" ### "s1","s2","s3b","s4","s5","s6b"
-num_node <- 50 ### 50, 100
+num_node <- 100 ### 50, 100
 num_seq <- 10
 
 
