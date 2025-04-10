@@ -26,10 +26,11 @@ run_sensitivity <- function() {
   
   # true_CP <- c(40, 60) # Sce 1
   # true_CP <- c(50,100) # Sce 2, 5, 6
-  true_CP <- c(50,100,150,200,250) # Sce 3
+  # true_CP <- c(50,100,150,200,250) # Sce 3
+  true_CP <- c(20, 60, 80, 160, 180) #Sce 3b
   # true_CP <- c() # Sce 4
   
-  load("data/seq10n50s3.RData") # Scenario 1 with node 50
+  load("data/seq10n50s3b.RData") # Scenario 1 with node 50
   
   num_seq <- dim(A.all_seq)[1] # 10 sequences
   num_T <- dim(A.all_seq)[2] # 150 time points
@@ -111,12 +112,12 @@ run_sensitivity <- function() {
     narrowestl1 = output_holder_nl1,
     narrowestl2 = output_holder_nl2
   )
-  save(sce_50, file = "results/sce3_50.RData")
+  save(sce_50, file = "results/sce3b_50.RData")
   
   
   
   
-  load("data/seq10n100s3.RData") # Scenario 1 with node 100
+  load("data/seq10n100s3b.RData") # Scenario 1 with node 100
   
   num_seq <- dim(A.all_seq)[1] # 10 sequences
   num_T <- dim(A.all_seq)[2] # 150 time points
@@ -198,7 +199,7 @@ run_sensitivity <- function() {
     narrowestl1 = output_holder_nl1,
     narrowestl2 = output_holder_nl2
   )
-  save(sce_100, file = "results/sce3_100.RData")
+  save(sce_100, file = "results/sce3b_100.RData")
  
 }
 
