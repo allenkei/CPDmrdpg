@@ -6,6 +6,7 @@ num_node <- 50 ### 50, 100
 num_seq <- 10 ### 50, 100 # 10 is for testing the code
 
 
+
 #######################
 # FIXED CONFIGURATION #
 #######################
@@ -92,7 +93,7 @@ if(scenario == "s1"){
   num_time <- 150
   num_layer <- 4
   block_size1 <- floor(c(3, 4, 3) / 10 * num_node) # fixed ratio
-  block_size2 <- floor(c(6, 2, 2) / 10 * num_node) # fixed ratio
+  block_size2 <- floor(c(5, 2, 3) / 10 * num_node) # fixed ratio
   
 }else if(scenario == "s7"){
   
@@ -283,9 +284,9 @@ if(scenario == "s1"){
     A.tensor <- array(NA, c(num_time, num_node, num_node, num_layer)) # 1 sequence
     
     # T from 1 to 150 (otherwise change the for loop)
-    for(t_iter in 1:50) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
-    for(t_iter in 51:100) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
-    for(t_iter in 101:150) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
+    for(t_iter in 1:40) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+    for(t_iter in 41:60) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
+    for(t_iter in 61:150) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
     
     A.all_seq[seq_iter,,,,] <- A.tensor
   }; rm(seq_iter, A.tensor)
