@@ -167,3 +167,87 @@ generate_tensor_probability_directed <- function(n_1, n_2, L, probability){
 }
 
 
+
+sim_SBM_array <- function(num_seq=1, n=50, rho=0.5, L=4, true_CP=c(25,50,75), num_time=100){
+  
+  # This function directly output the adjacency matrix with size (num_seq, num_time, n, n, L)
+  # rho controls the temporal dependency
+  
+  A.all_seq <- array(NA, c(num_seq, num_time, n, n, L)) # i.e. 10 sequences empty
+  
+  for(seq_iter in 1:num_seq){
+    
+    
+    A.tensor <- array(NA, c(num_time, n, n, L)) # 1 sequence
+    
+    K = 3
+    v = true_CP
+    
+    
+    for (layer in 1: L){ ### FOR EACH LAYER, THEN FOR EACH TIME T
+      
+      for(t in 1:num_time){
+        
+        if( t==1 || t==(v[2]+1) ){ # t=1 or t=51
+          
+          P =  matrix(0.3,n,n)
+          P[1:floor(n/K), 1:floor(n/K)] = 0.5
+          P[(1+floor(n/K)):(2*floor(n/K)),(1+floor(n/K)):(2*floor(n/K)) ] = 0.5
+          P[(1+2*floor(n/K)):n,(1+2*floor(n/K)):n ] = 0.5
+          diag(P) = 0
+          
+          A = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),P),n,n)
+          
+        }
+        
+        if(t == (v[1]+1) || t == (v[3]+1)){ # t=26 or t=76
+          
+          Q =  matrix(0.2,n,n)
+          Q[1:floor(n/K), 1:floor(n/K)] = 0.45
+          Q[(1+floor(n/K)):(2*floor(n/K)),(1+floor(n/K)):(2*floor(n/K)) ] = 0.45
+          Q[(1+2*floor(n/K)):n,(1+2*floor(n/K)):n ] = 0.45
+          diag(Q) = 0
+          
+          A = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),Q),n,n)
+          
+        }
+        
+        if( (t > 1 && t <= v[1])  ||  (t > v[2] && t <= v[3]) ){ # t=2 to t=25 or t=51 to t=75
+          
+          aux1 = (1-P)*rho + P # (1-E(t+1))*rho + E(t+1) if A(t) = 1
+          aux2 = P*(1-rho) # (1-E(t+1))*rho + E(t+1) if A(t) = 0
+          
+          aux1 = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),aux1),n,n)
+          aux2 = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),aux2),n,n)
+          A =  aux1*A + aux2*(1-A)
+          
+        }
+        
+        if( (t > v[1] && t <= v[2]) || ((t > v[3] && t <= num_time)) ){ # t=27 to t=50 or t=77 to t=100
+          
+          aux1 = (1-Q)*rho + Q
+          aux2 = Q*(1-rho)
+          
+          aux1 = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),aux1),n,n)
+          aux2 = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),aux2),n,n)
+          A =  aux1*A + aux2*(1-A)
+          
+        }
+        
+        diag(A) <- 0
+        A.tensor[t,,,layer] = A
+        
+      }
+      
+    }
+    
+    
+    A.all_seq[seq_iter,,,,] <- A.tensor
+    
+  }
+  
+  return(A.all_seq)
+}
+
+
+
