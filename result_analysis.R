@@ -3,19 +3,22 @@
 # Use code below for node=100
 
 # ADJUST TO DESIRED RESULTS 
-load("results/sce6b_50.RData")
+load("results/sce6_50.RData")
 
 num_thresholds <- dim(sce_50[[1]])[2]
 summary_matrix <- matrix(NA, nrow = length(sce_50), ncol = num_thresholds)
 
 for (i in 1:length(sce_50)) {
   # ADJUST FOR DESIRED STAT
-  stat_matrix <- sce_50[[i]][, , 4] 
+  stat_matrix <- sce_50[[i]][, , 3] 
   summary_matrix[i, ] <- colMeans(stat_matrix, na.rm = TRUE)
 }
 
-rownames(summary_matrix) <- c("Greedy", "Greedy1", "Greedy2", 
-                              "Narrowest", "Narrowest1", "Narrowest2")
+# rownames(summary_matrix) <- c("Greedy", "Greedy1", "Greedy2",
+#                               "Narrowest", "Narrowest1", "Narrowest2")
+# rownames(summary_matrix) <- c("Greedy", "Greedy1",
+#                               "Narrowest", "Narrowest1")
+rownames(summary_matrix) <- c("Greedy", "Greedy1")
 colnames(summary_matrix) <- paste0("Threshold_", 1:num_thresholds)
 summary_matrix
 
@@ -31,12 +34,15 @@ summary_matrix <- matrix(NA, nrow = length(sce_100), ncol = num_thresholds)
 
 for (i in 1:length(sce_100)) {
   # ADJUST FOR DESIRED STAT
-  stat_matrix <- sce_100[[i]][, , 4] 
+  stat_matrix <- sce_100[[i]][, , 3] 
   summary_matrix[i, ] <- colMeans(stat_matrix, na.rm = TRUE)
 }
 
-rownames(summary_matrix) <- c("Greedy", "Greedy1", "Greedy2", 
-                              "Narrowest", "Narrowest1", "Narrowest2")
+# rownames(summary_matrix) <- c("Greedy", "Greedy1", "Greedy2",
+#                               "Narrowest", "Narrowest1", "Narrowest2")
+# rownames(summary_matrix) <- c("Greedy", "Greedy1",
+#                               "Narrowest", "Narrowest1")
+rownames(summary_matrix) <- c("Greedy", "Greedy1")
 colnames(summary_matrix) <- paste0("Threshold_", 1:num_thresholds)
 summary_matrix
 

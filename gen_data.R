@@ -2,7 +2,7 @@ source("utility.R")
 
 set.seed(123)
 scenario <- "s7" ### "s1","s2","s3b","s4","s5","s6b","s7"
-num_node <- 50 ### 50, 100
+num_node <- 100 ### 50, 100
 num_seq <- 10 ### 50, 100 # 10 is for testing the code
 
 
@@ -92,8 +92,9 @@ if(scenario == "s1"){
   # FIRST LAYER DIFFERS
   num_time <- 150
   num_layer <- 4
+  epsilon <- 0.5
   block_size1 <- floor(c(3, 4, 3) / 10 * num_node) # fixed ratio
-  block_size2 <- floor(c(5, 2, 3) / 10 * num_node) # fixed ratio
+  block_size2 <- floor(c(4, 3, 3) / 10 * num_node) # fixed ratio
   
 }else if(scenario == "s7"){
   
@@ -101,8 +102,8 @@ if(scenario == "s1"){
   # THIS SCENARIO HAS TEMPORAL DEPENDENCY
   num_time <- 100
   num_layer <- 4
-  true_CP <- c(25,50,75) # RIGHT NOW, need exactly 3 CPs; no need to be evenly-spaced; see codes
-  rho <- 0.5 # TEMPORAL DEPENDENCY; can try (0.1, 0.5, 0.9)
+  true_CP <- c(20,50,80) # RIGHT NOW, need exactly 3 CPs; no need to be evenly-spaced; see codes
+  rho <- 0.1 # TEMPORAL DEPENDENCY; can try (0.1, 0.5, 0.9)
   
 }
 
