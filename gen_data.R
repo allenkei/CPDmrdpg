@@ -1,8 +1,8 @@
 source("utility.R")
 
 set.seed(123)
-scenario <- "s6.06" ### "s1","s2","s3b","s4","s5","s6b","s7"
-num_node <- 50 ### 50, 100
+scenario <- "s7b" ### "s1","s2","s3b","s4","s5","s6b","s7"
+num_node <- 100 ### 50, 100
 num_seq <- 10 ### 50, 100 # 10 is for testing the code
 
 
@@ -112,6 +112,15 @@ if(scenario == "s1"){
   num_layer <- 4
   true_CP <- c(20,50,80) # RIGHT NOW, need exactly 3 CPs; no need to be evenly-spaced; see codes
   rho <- 0.1 # TEMPORAL DEPENDENCY; can try (0.1, 0.5, 0.9)
+  
+}else if(scenario == "s7b"){
+  
+  # SEE 'utility.R' FOR DETAILS
+  # THIS SCENARIO HAS TEMPORAL DEPENDENCY
+  num_time <- 100
+  num_layer <- 4
+  true_CP <- c(20,50,80) # RIGHT NOW, need exactly 3 CPs; no need to be evenly-spaced; see codes
+  rho <- 0.5
   
 }
 
@@ -329,7 +338,7 @@ if(scenario == "s1"){
   dim(A.all_seq) 
   save(A.all_seq, file = paste0("data/seq",num_seq,"n",num_node,scenario,".RData")) # data folder exists
   
-} else if(scenario == "s7"){
+} else if(scenario == "s7" || scenario == "s7b"){
   
   # this function directly output A.all_seq with (num_seq, num_time, n, n, L)
   A.all_seq <- sim_SBM_array(num_seq, num_node, rho, num_layer, true_CP, num_time)
