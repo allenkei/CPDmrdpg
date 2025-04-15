@@ -227,3 +227,104 @@ model_selection <- function(results, obj, method = "BIC", verbose = "TRUE", ...)
   return(list("candidates" = as.vector(best_cps), "stat" = best_stat, "threshold" = results[[best_index]]$threshold, 
               "range" = stats, "ncps" = num_cps))
 }
+
+steepest_drop <- function(results, low_level, verbose = "TRUE") {
+  # Adapted from https://arxiv.org/pdf/1812.06880
+  # Using results constructed from Seeded Binary Segmentation, 
+  # selects nummber of change points based on drop in CUSUM statistics
+  # @param results Output of seeded binary segmentation
+  # @param low_level A lower bound for CUSUM statistics 
+    # should take the form C*num_node*sqrt(num_layer)*(log(num_T/2))^(3/2)
+  
+  if (dim(results)[2] != 4) {
+    stop("Supply the results matrix for a single, initialization threshold only!")
+  }
+  
+  results <- results[order(results[, 2], decreasing = TRUE), ]
+  n <- length(results[, 2])
+  
+  max_drop <- -Inf
+  best_k <- 0
+  
+  if (all(results[, 2] >= low_level)) {
+    warning("All CUSUM values above low_level - returning maximum model")
+    best_k <- n
+  } else if (all(results[, 2] < low_level)) {
+    warning("All CUSUM values below low_level - returning no change points")
+    best_k <- 0
+  } else {
+    for (k in 1:(n-1)) {
+      current_drop <- results[k, 2] - results[k+1, 2]
+      
+      if (verbose) {
+        cat(sprintf("k=%d: Drop=%.2f (%.2f -> %.2f)\n", 
+                    k, current_drop, results[k, 2], results[k+1, 2]))
+      }
+      
+      if (current_drop > max_drop && results[k+1, 2] < low_level) {
+        max_drop <- current_drop
+        best_k <- k
+      }
+    }
+  }
+  
+  if (verbose) {
+    cat(sprintf("\nSelected %d change-points with largest drop=%.2f\n",
+                best_k, max_drop))
+  }
+  
+  
+  return(list("candidates" = if (best_k > 0) results[1:best_k, 1] else numeric(0), 
+              "stat" = max_drop, "threshold" = low_level, 
+              "range" = if (best_k > 0) results[1:best_k, 2] else numeric(0), 
+              "ncps" = best_k))
+}
+
+steepest_drop_relative <- function(results, low_level, verbose = TRUE) {
+  # Adapted from https://arxiv.org/pdf/1812.06880
+  # Using results constructed from Seeded Binary Segmentation, 
+  # selects nummber of change points based on drop in CUSUM statistics
+  # @param results Output of seeded binary segmentation
+  # @param low_level A lower bound for CUSUM statistics 
+  # should take the form C*num_node*sqrt(num_layer)*(log(num_T/2))^(3/2)
+  
+  if (dim(results)[2] != 4) {
+    stop("Supply the results matrix for a single, initialization threshold only!")
+  }
+  
+  results <- results[order(results[, 2], decreasing = TRUE), ]
+  n <- length(results[, 2])
+  
+  max_drop <- -Inf
+  best_k <- 0
+  
+  if (all(results[, 2] < low_level)) {
+    warning("All CUSUM values below low_level - returning no change points")
+    best_k <- 0
+  } else {
+    for (k in 1:(n-1)) {
+      current_drop <- (results[k, 2] - results[k+1, 2])/results[k+1, 2]
+      
+      if (verbose) {
+        cat(sprintf("k=%d: Drop=%.2f (%.2f -> %.2f)\n", 
+                    k, current_drop, results[k, 2], results[k+1, 2]))
+      }
+      
+      if (current_drop > max_drop) {
+        max_drop <- current_drop
+        best_k <- k
+      }
+    }
+  }
+  
+  if (verbose) {
+    cat(sprintf("\nSelected %d change-points with largest drop=%.2f\n",
+                best_k, max_drop))
+  }
+  
+  
+  return(list("candidates" = if (best_k > 0) results[1:best_k, 1] else numeric(0), 
+              "stat" = max_drop, "threshold" = low_level, 
+              "range" = if (best_k > 0) results[1:best_k, 2] else numeric(0), 
+              "ncps" = best_k))
+}
