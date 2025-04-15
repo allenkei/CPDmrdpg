@@ -181,7 +181,7 @@ elbow <- function(obj, cps, verbose, hat.rank) {
   return(log_lik)
 }
 
-model_selection <- function(results, obj, method = "BIC", verbose = "TRUE", ...) {
+model_selection <- function(results, obj, method = "BIC", verbose = TRUE, ...) {
   # Using results constructed from Seeded Binary Segmentation, 
   # calculates model selection statistic, and selects best model.
   # The best model is the highest threshold minimizer of the statistic.
@@ -228,7 +228,7 @@ model_selection <- function(results, obj, method = "BIC", verbose = "TRUE", ...)
               "range" = stats, "ncps" = num_cps))
 }
 
-steepest_drop <- function(results, low_level, verbose = "TRUE") {
+steepest_drop <- function(results, low_level, verbose = TRUE) {
   # Adapted from https://arxiv.org/pdf/1812.06880
   # Using results constructed from Seeded Binary Segmentation, 
   # selects nummber of change points based on drop in CUSUM statistics

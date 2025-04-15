@@ -25,8 +25,8 @@ run_sensitivity <- function(both = TRUE) {
   
   cat("All settings confirmed. Proceeding...\n")
   
-  # true_CP <- c(40, 60) # Sce 1
-  # true_CP <- c(50,100) # Sce 2, 5, 6, 6b
+  # true_CP <- c(40, 60) # Sce 1, 5
+  # true_CP <- c(50,100) # Sce 2, 6, 6b
   # true_CP <- c(50,100,150,200,250) # Sce 3
   true_CP <- c(20, 60, 80, 160, 180) #Sce 3b
   # true_CP <- c() # Sce 4
@@ -97,7 +97,7 @@ run_sensitivity <- function(both = TRUE) {
   
   
   if(both == FALSE) {return ()}
-  load("data/seq10n100s7.RData") 
+  load("data/seq10n100s3b.RData") 
   
   num_seq <- dim(A.all_seq)[1] # 10 sequences
   num_T <- dim(A.all_seq)[2] # 150 time points
@@ -157,9 +157,9 @@ run_sensitivity <- function(both = TRUE) {
     relSDLL = output_holder_r, 
     relSDLL1 = output_holder_rl1
   )
-  save(sce_100, file = "results/S_sce7_100.RData")
+  save(sce_100, file = "results/S_sce3b_100.RData")
 
 }
 
-run_sensitivity(FALSE)
+run_sensitivity(TRUE)
 

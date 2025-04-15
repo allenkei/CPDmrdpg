@@ -1,8 +1,8 @@
 source("utility.R")
 
 set.seed(123)
-scenario <- "s7" ### "s1","s2","s3b","s4","s5","s6b","s7"
-num_node <- 100 ### 50, 100
+scenario <- "s6.06" ### "s1","s2","s3b","s4","s5","s6b","s7"
+num_node <- 50 ### 50, 100
 num_seq <- 10 ### 50, 100 # 10 is for testing the code
 
 
@@ -92,9 +92,17 @@ if(scenario == "s1"){
   # FIRST LAYER DIFFERS
   num_time <- 150
   num_layer <- 4
-  epsilon <- 0.5
   block_size1 <- floor(c(3, 4, 3) / 10 * num_node) # fixed ratio
-  block_size2 <- floor(c(4, 3, 3) / 10 * num_node) # fixed ratio
+  block_size2 <- floor(c(5, 2, 3) / 10 * num_node) # fixed ratio
+  
+}else if(scenario == "s6.06"){
+  # .02, .04, .06, .08
+  # FIRST LAYER DIFFERS
+  num_time <- 150
+  num_layer <- 4
+  epsilon <- 0.6
+  block_size1 <- floor(c(3, 3+epsilon, 3) / 10 * num_node) # fixed ratio
+  block_size2 <- floor(c(3+epsilon, 3, 3) / 10 * num_node) # fixed ratio
   
 }else if(scenario == "s7"){
   
@@ -296,7 +304,7 @@ if(scenario == "s1"){
   dim(A.all_seq) 
   save(A.all_seq, file = paste0("data/seq",num_seq,"n",num_node,scenario,".RData")) # data folder exists
   
-} else if(scenario == "s6" || scenario == "s6b"){
+} else if(startsWith(scenario, "s6")){
   
   sbm_params <- get_sbm_VS_FL_params(n=num_node, L=num_layer, block_size1, block_size2)
   probability_1 = sbm_params[[1]]

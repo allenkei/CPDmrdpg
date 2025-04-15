@@ -159,12 +159,15 @@ seeded_binary_seg <- function(CUSUM, obj, T, threshold = NULL, alpha = sqrt(1/2)
       }
     }
     
-    if (cur_thres_idx <= length(threshold)) {
+    while (cur_thres_idx <= length(threshold)) {
       # This means all rows were above the current threshold
+      # So we fill in the remaining threshold entries with all 
       subset = results[index_list, , drop = FALSE]
       solution_path <- c(solution_path, 
                          list(list(threshold = threshold[cur_thres_idx], results = subset)))
+      cur_thres_idx <- cur_thres_idx + 1
     }
+
     return(solution_path)
   }
   
