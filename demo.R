@@ -154,7 +154,7 @@ results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = re
 
 source("model_selection.R")
 source("SBS.R")
-load("data/seq10n50s3b.RData") # Scenario 1 with node 50
+load("data/seq10n50s8.RData") # Scenario 1 with node 50
 # load("data/seq10n100s1.RData") # Scenario 1 with node 100
 # load("data/seq10n50s2.RData") # Scenario 2 with node 50
 # load("data/seq10n100s2.RData") # Scenario 2 with node 100
@@ -170,15 +170,22 @@ hat.rank <- c(15, 15, num_layer) # needed for model selection (Question: should 
 A.tensor.even <- A.all_seq[1, seq(2, num_T, by = 2), , , ]
 B.tensor.odd  <- A.all_seq[1, seq(1, num_T-1, by = 2), , , ]
 
-intervals <- construct_intervals(num_T/2, sqrt(1/2), 2)
+intervals <- construct_intervals(num_T/2, sqrt(1/2), 8)
 results_all_step1 <- cusum_on_intervals(CUSUM_step1, A.tensor.even, intervals, obj.B = B.tensor.odd)
-init <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = results_all_step1, verbose = FALSE, 
+init <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = results_all_step1, verbose = TRUE, 
                           threshold = 1, method = "Greedy", obj.B = B.tensor.odd)
+init <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = results_all_step1, verbose = TRUE,
+                          threshold = 0.08*num_node*sqrt(num_layer)*(log(num_T/2))^(3/2),
+                          method = "Narrowest", obj.B = B.tensor.odd)
 
+out <- steepest_drop(init[[2]]$results, 0.05*num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
+rel <- steepest_drop_relative(init[[2]]$results, 0.01*num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
 
-out <- steepest_drop(init[[2]]$results, 0.1*num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
-rel <- steepest_drop_relative(init[[2]]$results, 0.1*num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
 rel$candidates
+init[[2]]
+
+# For sce8 first seq, this demonstrates the refinement "can" work
+refinement1(c(21, 51), A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer))
 
 ################################
 # ELBO Model Selection Options # 

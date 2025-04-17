@@ -86,15 +86,15 @@ cusum_on_intervals <- function(CUSUM, obj, intervals, verbose = TRUE, ...) {
           candidate <- t
         }
       }
+      if (verbose) {
+        print(paste0("candidate = ", candidate, ", max_gain = ", max_gain, ", s = ", s, ", e = ", e, ", interval = ", i, "."))
+      }
     }
     
-    if (verbose) {
-      print(paste0("candidate = ", candidate, ", max_gain = ", max_gain, ", s = ", s, ", e = ", e, ", interval = ", i, "."))
-    }
     results[i, ] <- c(candidate, max_gain, s, e)
   }
   
-  return(results)
+  return(results[!is.na(results[, 1]), , drop = FALSE])
   
 }
 

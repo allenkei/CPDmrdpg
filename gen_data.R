@@ -1,8 +1,8 @@
 source("utility.R")
 
 set.seed(123)
-scenario <- "s7b" ### "s1","s2","s3b","s4","s5","s6b","s7"
-num_node <- 100 ### 50, 100
+scenario <- "s8.03" ### "s1","s2","s3b","s4","s5","s6b","s7"
+num_node <- 50 ### 50, 100
 num_seq <- 10 ### 50, 100 # 10 is for testing the code
 
 
@@ -122,6 +122,14 @@ if(scenario == "s1"){
   true_CP <- c(20,50,80) # RIGHT NOW, need exactly 3 CPs; no need to be evenly-spaced; see codes
   rho <- 0.5
   
+}else if(scenario == "s8"){
+  num_time <- 150
+  num_layer <- 4
+  epsilon <- 0.1 # Default 0.05
+}else if(scenario == "s8.05"){
+  num_time <- 150
+  num_layer <- 4
+  epsilon <- 0.05 
 }
 
 
@@ -346,6 +354,30 @@ if(scenario == "s1"){
   dim(A.all_seq) 
   save(A.all_seq, file = paste0("data/seq",num_seq,"n",num_node,scenario,".RData")) # data folder exists
   
+} else if(startsWith(scenario, "s8")) {
+  
+  sbm_params <- get_sbm_params_spa_inc(n=num_node, L=num_layer, epsilon = epsilon, n_c=c(4, 4, 4))
+  probability_1 = sbm_params[[1]]
+  probability_2 = sbm_params[[2]]
+  probability_3 = sbm_params[[3]]
+  
+  A.all_seq <- array(NA, c(num_seq, num_time, num_node, num_node, num_layer)) # i.e. 10 sequences empty
+  
+  # begin simulate data
+  for(seq_iter in 1:num_seq){
+    
+    A.tensor <- array(NA, c(num_time, num_node, num_node, num_layer)) # 1 sequence
+    
+    # T from 1 to 150 (otherwise change the for loop)
+    for(t_iter in 1:50) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+    for(t_iter in 51:100) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
+    for(t_iter in 101:150) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
+    
+    A.all_seq[seq_iter,,,,] <- A.tensor
+  }; rm(seq_iter, A.tensor)
+  
+  dim(A.all_seq) 
+  save(A.all_seq, file = paste0("data/seq",num_seq,"n",num_node,scenario,".RData")) # data folder exists
 }
   
   

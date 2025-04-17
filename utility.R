@@ -148,6 +148,40 @@ get_sbm_VS_FL_params <- function(n, L, block_sizes1, block_sizes2, n_c=c(4, 4)){
   return(list(probability_1, probability_2))
 }
 
+get_sbm_params_spa_inc <- function(n, L, n_c=c(4, 4, 4), epsilon = 0.05){
+  # output probability matrix before and after, each with (n,n L)
+  # block size fixed
+  
+  probability_1 = array(NA, c(n, n, L))
+  probability_2 = array(NA, c(n, n, L))
+  probability_3 = array(NA, c(n, n, L))
+  
+  # Define increasing probability ranges for each window
+  prob_ranges <- list(
+    c(0.21, 0.25),   # sparse
+    c(0.21 + epsilon, 0.25 + epsilon),    # moderate
+    c(0.21 + 2*epsilon, 0.25 + 2*epsilon)    # dense
+  )
+  
+  for (layer in 1: L) {
+    
+    p1_vals <- sapply(prob_ranges, function(rng) runif(1, rng[1]/2, rng[2]/2)) # inter is lower
+    p2_vals <- sapply(prob_ranges, function(rng) runif(1, rng[1], rng[2]))
+    
+    # Generate the blockwise adjacency matrices for each set of probabilities
+    P = get_blockwise_const_mat(n, n_c[1], p1_vals[1], p2_vals[1])
+    probability_1[, , layer] = P
+    
+    P = get_blockwise_const_mat(n, n_c[2], p1_vals[2], p2_vals[2])
+    probability_2[, , layer] = P
+    
+    P = get_blockwise_const_mat(n, n_c[3], p1_vals[3], p2_vals[3])
+    probability_3[, , layer] = P
+  }
+  
+  return(list(probability_1, probability_2, probability_3))
+}
+
 
 
 
