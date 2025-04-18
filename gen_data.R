@@ -417,8 +417,8 @@ if(scenario == "s1"){
 # f1: No change, T = 200
 # f2: Flip layers and change block numbers, T = 200 (5 change points) 
 # f3: Block size change, first layer only, change to T = 200 (3 change points 1-2-3-1)
-# f4: Sparsity Increases , then decreases, T = 200 (4 change points 1-2-3-2-1)
-# f5: Sparsity Increases, weak difference, T = 200 (2 change points 1-2-3)
+# f4: Sparsity fluctuates, T = 200 (5 change points 1-2-3-2-1-2)
+# f5: Sparsity, weak difference, T = 200 (3 change points 1-2-3-1)
 
 generate <- function(scenario, num_node=50, num_seq=1, save = TRUE) {
   # f1, f2, f3, f4, f5
@@ -538,11 +538,12 @@ generate <- function(scenario, num_node=50, num_seq=1, save = TRUE) {
       # T from 1 to 150 (otherwise change the for loop)
       for(t_iter in 1:20) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
       for(t_iter in 21:60) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
-      for(t_iter in 61:120) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
-      for(t_iter in 121:150) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
-      for(t_iter in 151:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+      for(t_iter in 61:80) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
+      for(t_iter in 81:160) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
+      for(t_iter in 161:180) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+      for(t_iter in 181:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
       
-      
+      # c(20, 60, 80, 160, 180)
       A.all_seq[seq_iter,,,,] <- A.tensor
     }; rm(seq_iter, A.tensor)
     
@@ -565,7 +566,8 @@ generate <- function(scenario, num_node=50, num_seq=1, save = TRUE) {
       # T from 1 to 150 (otherwise change the for loop)
       for(t_iter in 1:50) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
       for(t_iter in 51:100) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
-      for(t_iter in 101:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
+      for(t_iter in 101:150) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
+      for(t_iter in 151:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
       
       A.all_seq[seq_iter,,,,] <- A.tensor
     }; rm(seq_iter, A.tensor)

@@ -6,14 +6,14 @@ source("gen_data.R")
 
 
 simulate_scenario <- function(scenario, true_cp, num_node = 50, num_seq = 10) {
-  generate(scenario, num_node, 1)
+  A.all_seq <- generate(scenario, num_node, 1, FALSE)
   
   num_T <- dim(A.all_seq)[2] 
   num_node <- dim(A.all_seq)[3] 
   num_layer <- dim(A.all_seq)[5] 
   hat.rank <- c(15, 15, num_layer) # needed for model selection (Question: should be used as input to some FUNC)
   
-  threshold_list <- rev(c(0.05, 0.1, 0.15, 0.2, 0.25) * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
+  threshold_list <- rev(c(0.05, 0.08, 0.1, 0.12, 0.15, 0.2, 0.25) * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
   
   intervals <- construct_intervals(num_T/2, sqrt(1/2), 4)
   
@@ -25,7 +25,6 @@ simulate_scenario <- function(scenario, true_cp, num_node = 50, num_seq = 10) {
   for(seq_iter in 1:num_seq) {
     cat("\nIteration", seq_iter, "begin.\n")
     set.seed(seq_iter)
-    
     # Generate Data 1-by-1
     A.all_seq <- generate(scenario, num_node, 1, FALSE)
     A.tensor <- A.all_seq[1,,,,] # a particular sequence with dim 150  50  50   4
@@ -56,12 +55,15 @@ simulate_scenario <- function(scenario, true_cp, num_node = 50, num_seq = 10) {
     greedyl1 = output_holder_gl1
   )
   save(results, file = paste0("results/", scenario, "_", num_node, ".RData"))
+  
   return(results)
 }
 
+###########
+# Run one #
+###########
 
-
-scenario <- "f1" # f1, f2, f3, f4, f5
+scenario <- "f5" # f1, f2, f3, f4, f5
 if (scenario == "f1") {
   true_CP <- c()
 } else if (scenario == "f2") {
@@ -69,15 +71,15 @@ if (scenario == "f1") {
 } else if (scenario == "f3") {
   true_CP <- c(50, 100, 150)
 } else if (scenario == "f4") {
-  true_CP <- c(20, 60, 120, 150) 
+  true_CP <- c(20, 60, 80, 160, 180)
 } else if (scenario == "f5") {
-  true_CP <- c(50, 100)
+  true_CP <- c(50, 100, 150)
 } else {
   stop("Invalid scenario!")
 }
 
 num_node <- 50
-num_seq <- 10
+num_seq <- 3
 
 results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
 
@@ -94,6 +96,59 @@ for (i in 1:length(results)) {
 }
 
 rownames(summary_matrix) <- c("Greedy", "Greedy1")
-colnames(summary_matrix) <- paste0("Threshold ", rev(c(0.05, 0.1, 0.15, 0.2, 0.25)))
+colnames(summary_matrix) <- paste0("Threshold ", rev(c(0.05, 0.075, 0.1, 0.125, 0.15, 0.2, 0.25)))
 summary_matrix
 
+###########
+# Run all #
+###########
+
+
+{
+  timing_summary <- data.frame(
+    scenario = character(),
+    elapsed_minutes = numeric(),
+    stringsAsFactors = FALSE
+  )
+  
+  start_time <- Sys.time()
+  cat("Start time:", format(start_time), "\n")
+  for (scenario in c("f1", "f2", "f3", "f4", "f5")) {
+    
+    num_node <- 50
+    num_seq <- 100
+    
+    if (scenario == "f1") {
+      true_CP <- c()
+    } else if (scenario == "f2") {
+      true_CP <- c(20, 60, 80, 160, 180)
+    } else if (scenario == "f3") {
+      true_CP <- c(50, 100, 150)
+    } else if (scenario == "f4") {
+      true_CP <- c(20, 60, 80, 160, 180)
+    } else if (scenario == "f5") {
+      true_CP <- c(50, 100, 150)
+    } else {
+      stop("Invalid scenario!")
+    }
+    
+    loc_start <- Sys.time()
+    cat("\n==== Running scenario", scenario, "====\n")
+    cat("Start time:", format(loc_start), "\n")
+    
+    results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
+    
+    end_time <- Sys.time()
+    elapsed <- difftime(end_time, loc_start, units = "mins")
+    cat("End time:", format(end_time), "\n")
+    cat("Elapsed time:", round(elapsed, 2), "minutes\n")
+    
+    # Log timing
+    timing_summary <- rbind(
+      timing_summary,
+      data.frame(scenario = scenario, elapsed_minutes = round(as.numeric(elapsed), 2))
+    )
+  }
+  
+  timing_summary
+}
