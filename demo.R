@@ -153,7 +153,7 @@ results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = re
 # Manual Refinement Check # 
 ###########################
 
-load("data/seq10n50s2.RData") # Scenario 1 with node 50
+load("data/seq10n50s8.RData") # Scenario 1 with node 50
 # load("data/seq10n100s1.RData") # Scenario 1 with node 100
 # load("data/seq10n50s2.RData") # Scenario 2 with node 50
 # load("data/seq10n100s2.RData") # Scenario 2 with node 100
