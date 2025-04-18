@@ -22,10 +22,12 @@ num_node <- dim(A.all_seq)[3]
 num_layer <- dim(A.all_seq)[5] 
 hat.rank <- c(15, 15, num_layer) # needed for model selection (Question: should be used as input to some FUNC)
 
-# true_CP <- c(40, 60) # Sce 1
-true_CP <- c(50,100) # Sce 2, 5
+# true_CP <- c(40, 60) # Sce 1, 5
+true_CP <- c(50,100) # Sce 2, 6*, 8*
 # true_CP <- c(50,100,150,200,250) # Sce 3
+# true_CP <- c(20, 60, 80, 160, 180) #Sce 3b
 # true_CP <- c() # Sce 4
+# true_CP <- c(20,50,80) # Sce 7, 7b
 
 level <- (1)*num_node*sqrt(num_layer)*(log(num_T/2))^(3/2)
 
@@ -147,6 +149,45 @@ results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = re
                              threshold = c(1000, 500, 250, 70, 1), method = "Greedy", obj.B = B.tensor.odd)
 
 
+###########################
+# Manual Refinement Check # 
+###########################
+
+load("data/seq10n50s2.RData") # Scenario 1 with node 50
+# load("data/seq10n100s1.RData") # Scenario 1 with node 100
+# load("data/seq10n50s2.RData") # Scenario 2 with node 50
+# load("data/seq10n100s2.RData") # Scenario 2 with node 100
+
+# true_CP <- c(40, 60) # Sce 1, 5
+true_CP <- c(50,100) # Sce 2, 6*, 8*
+# true_CP <- c(50,100,150,200,250) # Sce 3
+# true_CP <- c(20, 60, 80, 160, 180) #Sce 3b
+# true_CP <- c() # Sce 4
+# true_CP <- c(20,50,80) # Sce 7, 7b
+
+dim(A.all_seq) # 10 150  50  50   4
+
+num_seq <- dim(A.all_seq)[1] # 10 sequences
+num_T <- dim(A.all_seq)[2] # 150 time points
+num_node <- dim(A.all_seq)[3] 
+num_layer <- dim(A.all_seq)[5] 
+hat.rank <- c(15, 15, num_layer) # needed for model selection (Question: should be used as input to some FUNC)
+
+A.tensor.even <- A.all_seq[1, seq(2, num_T, by = 2), , , ]
+B.tensor.odd  <- A.all_seq[1, seq(1, num_T-1, by = 2), , , ]
+
+# For sce8 first seq, this demonstrates the refinement "can" work
+for (i in -5:5) {
+  cp <- true_CP/2 + c(i, 0)
+  print(refinement1(cp, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer)))
+}
+for (j in -5:5) {
+  cp <- true_CP/2 + c(0, j)
+  print(refinement1(cp, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer)))
+}
+
+
+
 
 ###################
 # Model Selection # 
@@ -154,7 +195,7 @@ results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = re
 
 source("model_selection.R")
 source("SBS.R")
-load("data/seq10n50s8.RData") # Scenario 1 with node 50
+load("data/seq10n50s6b.RData") # Scenario 1 with node 50
 # load("data/seq10n100s1.RData") # Scenario 1 with node 100
 # load("data/seq10n50s2.RData") # Scenario 2 with node 50
 # load("data/seq10n100s2.RData") # Scenario 2 with node 100
@@ -183,9 +224,6 @@ rel <- steepest_drop_relative(init[[2]]$results, 0.01*num_node*sqrt(num_layer)*(
 
 rel$candidates
 init[[2]]
-
-# For sce8 first seq, this demonstrates the refinement "can" work
-refinement1(c(21, 51), A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer))
 
 ################################
 # ELBO Model Selection Options # 
