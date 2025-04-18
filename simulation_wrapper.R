@@ -83,22 +83,6 @@ num_seq <- 3
 
 results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
 
-num_thresholds <- dim(results[[1]])[2]
-summary_matrix <- matrix(NA, nrow = length(results), ncol = num_thresholds)
-
-for (i in 1:length(results)) {
-  # ADJUST FOR DESIRED STAT
-  stat_matrix <- results[[i]][, , 3] 
-  summary_matrix[i, ] <- colMeans(stat_matrix, na.rm = TRUE)
-  # summary_matrix[i, ] <- apply(stat_matrix, 2, median, na.rm = TRUE)
-  # summary_matrix[i, ] <- apply(stat_matrix, 2, function(x) sum(x != 0, na.rm = TRUE))
-  # summary_matrix[i, ] <- apply(stat_matrix, 2, function(x) sum(is.finite(x)))
-}
-
-rownames(summary_matrix) <- c("Greedy", "Greedy1")
-colnames(summary_matrix) <- paste0("Threshold ", rev(c(0.05, 0.075, 0.1, 0.125, 0.15, 0.2, 0.25)))
-summary_matrix
-
 ###########
 # Run all #
 ###########
@@ -140,7 +124,7 @@ summary_matrix
     
     end_time <- Sys.time()
     elapsed <- difftime(end_time, loc_start, units = "mins")
-    cat("End time:", format(end_time), "\n")
+    cat("\nEnd time:", format(end_time), "\n")
     cat("Elapsed time:", round(elapsed, 2), "minutes\n")
     
     # Log timing
@@ -152,3 +136,24 @@ summary_matrix
   
   timing_summary
 }
+
+############
+# Analysis #
+############
+load("results/f5_50.RData")
+
+num_thresholds <- dim(results[[1]])[2]
+summary_matrix <- matrix(NA, nrow = length(results), ncol = num_thresholds)
+
+for (i in 1:length(results)) {
+  # ADJUST FOR DESIRED STAT
+  stat_matrix <- results[[i]][, , 3] 
+  summary_matrix[i, ] <- colMeans(stat_matrix, na.rm = TRUE)
+  # summary_matrix[i, ] <- apply(stat_matrix, 2, median, na.rm = TRUE)
+  # summary_matrix[i, ] <- apply(stat_matrix, 2, function(x) sum(x != 0, na.rm = TRUE))
+  # summary_matrix[i, ] <- apply(stat_matrix, 2, function(x) sum(is.finite(x)))
+}
+
+rownames(summary_matrix) <- c("Greedy", "Greedy1")
+colnames(summary_matrix) <- paste0(rev(c(0.05, 0.075, 0.1, 0.125, 0.15, 0.2, 0.25)))
+summary_matrix
