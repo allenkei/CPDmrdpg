@@ -7,10 +7,11 @@
 
 library(kerSeg)
 
-Evaluation_kerSeg <- function(y_array, p_threshold, is_experiment=FALSE, true_CP){
+Evaluation_kerSeg <- function(y_array, p_threshold, is_experiment=FALSE, true_CP, pre_process){
   
   # is_experiment = TRUE  # for real data experiment
   # is_experiment = FALSE # for simulated study
+  # pre_process: kerSeg_net, kerSeg_fro
   
   binary_search <- function(temp, holder, lower_index, upper_index, p_threshold){
     
@@ -56,8 +57,24 @@ Evaluation_kerSeg <- function(y_array, p_threshold, is_experiment=FALSE, true_CP
       n <- dim(y_data[1,,,])[1] # 50
       L <- dim(y_data[1,,,])[3] # 4
       
-      temp <- matrix(NA, nrow=num_time, ncol=n*n*L)
-      for(iter in 1:num_time){temp[iter,] <- c(y_data[iter,,,])}
+      
+      if(pre_process == "kerSeg_net"){
+        
+        # vectorize network
+        temp <- matrix(NA, nrow=num_time, ncol=n*n*L)
+        for(iter in 1:num_time){temp[iter,] <- c(y_data[iter,,,])}
+        
+      }else if(pre_process == "kerSeg_fro"){
+        
+        # Frobenius norm by layer
+        temp <- matrix(NA, nrow=num_time, ncol=L)
+        for(iter in 1:num_time){
+          for (l in 1:L) {
+            temp[iter, l] <- norm(as.matrix(y_data[iter, , , l]), type = "F")  
+          }
+        }
+        
+      }
       
       est_CP <- binary_search(temp, c(), 1, num_time, p_threshold); rm(temp)
       est_CP <- sort(est_CP)
@@ -134,10 +151,11 @@ Evaluation_kerSeg <- function(y_array, p_threshold, is_experiment=FALSE, true_CP
 library(gSeg)
 library(ade4)
 
-Evaluation_gSeg <- function(y_array, p_threshold, is_experiment=FALSE, true_CP){
+Evaluation_gSeg <- function(y_array, p_threshold, is_experiment=FALSE, true_CP, pre_process){
   
   # is_experiment = TRUE  # for real data experiment
   # is_experiment = FALSE # for simulated study
+  # pre_process: gSeg_net, gSeg_fro
   
   binary_search <- function(temp, holder, lower_index, upper_index, p_threshold){
     
@@ -186,8 +204,23 @@ Evaluation_gSeg <- function(y_array, p_threshold, is_experiment=FALSE, true_CP){
       n <- dim(y_data[1,,,])[1] # 50
       L <- dim(y_data[1,,,])[3] # 4
       
-      temp <- matrix(NA, nrow=num_time, ncol=n*n*L)
-      for(iter in 1:num_time){temp[iter,] <- c(y_data[iter,,,])}
+      if(pre_process == "gSeg_net"){
+        
+        # vectorize network
+        temp <- matrix(NA, nrow=num_time, ncol=n*n*L)
+        for(iter in 1:num_time){temp[iter,] <- c(y_data[iter,,,])}
+        
+      }else if(pre_process == "gSeg_fro"){
+        
+        # Frobenius norm by layer
+        temp <- matrix(NA, nrow=num_time, ncol=L)
+        for(iter in 1:num_time){
+          for (l in 1:L) {
+            temp[iter, l] <- norm(as.matrix(y_data[iter, , , l]), type = "F")  
+          }
+        }
+        
+      }
       
       est_CP <- binary_search(temp, c(), 1, num_time, p_threshold); rm(temp)
       est_CP <- sort(est_CP)
@@ -261,9 +294,9 @@ Evaluation_gSeg <- function(y_array, p_threshold, is_experiment=FALSE, true_CP){
 #########
 # USAGE #
 #########
-load(file.choose()) # choose RData
-true_CP <- c(40,60)
-Evaluation_kerSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_CP)
-Evaluation_gSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_CP)
+#load(file.choose()) # choose RData
+#true_CP <- c(40,60)
+#Evaluation_kerSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_CP, "kerSeg_net")
+#Evaluation_gSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_CP, "gSeg_net")
 
 
