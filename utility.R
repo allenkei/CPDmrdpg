@@ -1,5 +1,8 @@
 
 library(rTensor)
+library(MCMCpack) # need to install
+
+
 
 
 
@@ -283,5 +286,98 @@ sim_SBM_array <- function(num_seq=1, n=50, rho=0.5, L=4, true_CP=c(25,50,75), nu
   return(A.all_seq)
 }
 
+
+
+
+
+
+
+generate_tensor_dirichlet <- function(n_1, n_2, L, W,
+                                      dirichlet_x, dirichlet_y, directed = TRUE){
+  dim_ = c(n_1, n_2, L)
+  A = array(NA,dim_)
+  probability = array(NA,dim_)
+  
+  if (directed){
+    for (layer in 1: L)
+    {
+      temp_1 = rdirichlet(n_1, dirichlet_x)
+      temp_2 = rdirichlet(n_2, dirichlet_y)
+      P =  temp_1  %*% W[, , layer] %*% t(temp_2)
+      probability[, , layer] = P
+      
+      A[, , layer] = matrix(rbinom(matrix(1,n_1,n_2),matrix(1,n_1,n_2), probability[ , , layer]),n_1,n_2)
+    }
+  } else {
+    for (layer in 1: L)
+    {
+      temp_1 = rdirichlet(n_1, dirichlet_x)
+      P =  temp_1  %*% W[, , layer] %*% t(temp_1)
+      probability[, , layer] = P
+      
+      Al = matrix(rbinom(matrix(1,n_1,n_2),matrix(1,n_1,n_2), probability[ , , layer]),n_1,n_2)
+      Al[upper.tri(Al)] = t(Al)[upper.tri(Al)]
+      
+      A[, , layer] = Al
+    }
+  }
+  
+  return(A)
+}
+
+
+get_dirichlet_params <- function(n_1, n_2, L, d){
+  
+  # set.seed(n_1*n_2*L*d)
+  
+  dirichlet_xy_1 = list(x = rep(1, d),
+                        y = rep(10, d))
+  dirichlet_xy_2 = list(x = rep(500, d),
+                        y = rep(1000, d))
+  
+  W_1 =  array(NA,c(d, d, L))
+  prob = seq(0,1,  1/(2*L))
+  for (layer in 1: L)
+  {
+    Sigma = matrix(runif(d^2,prob[L+layer], prob[L+layer+1]), ncol=d) 
+    W_1[, , layer] = Sigma
+  }
+  
+  W_2 =  array(NA,c(d, d, L))
+  prob = seq(0,1,  1/(2*L))
+  for (layer in 1: L)
+  {
+    Sigma = matrix(runif(d^2,prob[L+layer], prob[L+layer+1]), ncol=d) 
+    W_2[, , layer] = Sigma
+  }
+  
+  return(list(dirichlet_xy_1, dirichlet_xy_2, W_1, W_2))
+}
+
+
+
+
+
+get_data_cp_dirichlet <- function(num_time, cp_truth, n_1, n_2, L, dirichlet_xy_1, W_1, dirichlet_xy_2, W_2, directed = TRUE){
+  
+  # cp_truth <- c(50, 100) # num_time <- 150
+  
+  A_array <- array(0, c(num_time, n_1, n_2, L))
+  
+  for (t in 1:cp_truth[1]){
+    A_array[t, , ,] <- generate_tensor_dirichlet(n_1, n_2, L, W_1,
+                                                 dirichlet_x = dirichlet_xy_1$x,
+                                                 dirichlet_y = dirichlet_xy_1$y, directed)}
+  for (t in (cp_truth[1] + 1):(cp_truth[2])){
+    A_array[t, , ,] <- generate_tensor_dirichlet(n_1, n_2, L, W_2,
+                                                 dirichlet_x = dirichlet_xy_2$x, 
+                                                 dirichlet_y = dirichlet_xy_2$y, directed)}
+  for (t in (cp_truth[2] + 1):num_time){
+    A_array[t, , ,] <- generate_tensor_dirichlet(n_1, n_2, L, W_1,
+                                                 dirichlet_x = dirichlet_xy_1$x,
+                                                 dirichlet_y = dirichlet_xy_1$y, directed)}
+  
+  return(A_array)
+}
 
 
