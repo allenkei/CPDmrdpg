@@ -293,6 +293,37 @@ sim_SBM_array <- function(num_seq=1, n=50, rho=0.5, L=4, true_CP=c(25,50,75), nu
 
 
 
+
+get_dirichlet_params <- function(n_1, n_2, L, d){
+  
+  # set.seed(n_1*n_2*L*d)
+  
+  dirichlet_xy_1 = list(x = rep(1, d), y = rep(1, d))
+  dirichlet_xy_2 = list(x = rep(500, d), y = rep(500, d))
+  
+  W_1 =  array(NA,c(d, d, L))
+  prob = seq(0,1,  1/(4*L))
+  for (layer in 1: L){
+    W_1[, , layer] = matrix(runif(d^2,prob[2*L+layer], prob[2*L+layer+1]), ncol=d) 
+  }
+  
+  #p_1 = runif(1, prob[2*L+layer], prob[2*L+layer+1])
+  #p_2 = runif(1, prob[3*L+layer], prob[3*L+layer+1])
+  
+  W_2 =  array(NA,c(d, d, L))
+  prob = seq(0,1,  1/(4*L))
+  for (layer in L:1){
+    W_2[, , layer] = matrix(runif(d^2,prob[3*L+layer], prob[3*L+layer+1]), ncol=d) 
+  }
+  
+  return(list(dirichlet_xy_1, dirichlet_xy_2, W_1, W_2)) # WEIGHTS W1 ARE IDENTICAL 
+}
+
+
+
+
+
+
 generate_tensor_dirichlet <- function(n_1, n_2, L, W,
                                       dirichlet_x, dirichlet_y, directed = TRUE){
   dim_ = c(n_1, n_2, L)
@@ -300,60 +331,20 @@ generate_tensor_dirichlet <- function(n_1, n_2, L, W,
   probability = array(NA,dim_)
   
   if (directed){
-    for (layer in 1: L)
-    {
+    for (layer in 1: L){
       temp_1 = rdirichlet(n_1, dirichlet_x)
       temp_2 = rdirichlet(n_2, dirichlet_y)
-      P =  temp_1  %*% W[, , layer] %*% t(temp_2)
-      probability[, , layer] = P
-      
+      probability[, , layer] = temp_1  %*% W[, , layer] %*% t(temp_2)
       A[, , layer] = matrix(rbinom(matrix(1,n_1,n_2),matrix(1,n_1,n_2), probability[ , , layer]),n_1,n_2)
     }
-  } else {
-    for (layer in 1: L)
-    {
-      temp_1 = rdirichlet(n_1, dirichlet_x)
-      P =  temp_1  %*% W[, , layer] %*% t(temp_1)
-      probability[, , layer] = P
-      
-      Al = matrix(rbinom(matrix(1,n_1,n_2),matrix(1,n_1,n_2), probability[ , , layer]),n_1,n_2)
-      Al[upper.tri(Al)] = t(Al)[upper.tri(Al)]
-      
-      A[, , layer] = Al
-    }
-  }
+  } 
+  
   
   return(A)
 }
 
 
-get_dirichlet_params <- function(n_1, n_2, L, d){
-  
-  # set.seed(n_1*n_2*L*d)
-  
-  dirichlet_xy_1 = list(x = rep(1, d),
-                        y = rep(10, d))
-  dirichlet_xy_2 = list(x = rep(500, d),
-                        y = rep(1000, d))
-  
-  W_1 =  array(NA,c(d, d, L))
-  prob = seq(0,1,  1/(2*L))
-  for (layer in 1: L)
-  {
-    Sigma = matrix(runif(d^2,prob[L+layer], prob[L+layer+1]), ncol=d) 
-    W_1[, , layer] = Sigma
-  }
-  
-  W_2 =  array(NA,c(d, d, L))
-  prob = seq(0,1,  1/(2*L))
-  for (layer in 1: L)
-  {
-    Sigma = matrix(runif(d^2,prob[L+layer], prob[L+layer+1]), ncol=d) 
-    W_2[, , layer] = Sigma
-  }
-  
-  return(list(dirichlet_xy_1, dirichlet_xy_2, W_1, W_2))
-}
+
 
 
 

@@ -163,34 +163,25 @@ generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
     }; rm(seq_iter, A.tensor)
   } else if(scenario == "f6"){
     
-    cp_truth <- c(80,140)
-    d <- 5
+    cp_truth <- c(70, 140)
+    d <- 3
     
     A.all_seq <- array(NA, c(num_seq, num_time, num_node, num_node, num_layer)) # i.e. 10 sequences empty
     
     # begin simulate data
     for(seq_iter in 1:num_seq){
       params <- get_dirichlet_params(num_node, num_node, num_layer, d)
-      dirichlet_xy_1 <- params[[1]]
-      dirichlet_xy_2 <- params[[2]]
+      dirichlet_xy_1 <- params[[1]]; dirichlet_xy_2 <- params[[2]]
       W_1 <- params[[3]]; W_2 <- params[[4]]
       
       A.all_seq[seq_iter,,,,] <- get_data_cp_dirichlet(num_time, cp_truth, num_node, num_node, 
                                                        num_layer, dirichlet_xy_1, W_1, dirichlet_xy_2, W_2, directed = TRUE)
     }
-    
   }
-  
   
   if (save == TRUE) {save(A.all_seq, file = paste0("data/seq",num_seq,"n",num_node,scenario,".RData"))}
   return(A.all_seq)
 }
-
-
-
-
-temp <- generate("f6", num_node = 50, num_seq = 1, save = FALSE)
-dim(temp)
 
 
 

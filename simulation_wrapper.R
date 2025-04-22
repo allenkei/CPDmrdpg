@@ -75,7 +75,7 @@ if (scenario == "f1") {
 } else if (scenario == "f5") {
   true_CP <- c(50, 100, 150)
 } else if (scenario == "f6") {
-  true_CP <- c(80,140)
+  true_CP <- c(70,140)
 } else {
   stop("Invalid scenario!")
 }
