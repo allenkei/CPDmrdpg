@@ -1,13 +1,10 @@
 source("utility.R")
 
-
-
-
 construct_intervals <- function(alpha, detected_CP, A, B, rank, verbose = FALSE) {
   K <- length(detected_CP)
   intervals <- matrix(nrow = K, ncol = 3) # estimate, lb, ub 
   
-  # Question, do I need this for step 1
+  # Question, do I need this for step 1 & 2? It seems like it
   nu <- c(0, detected_CP, dim(A)[1]) 
   
   for (k in 2:(K+1)) {
@@ -70,6 +67,7 @@ construct_intervals <- function(alpha, detected_CP, A, B, rank, verbose = FALSE)
     
     # hist(u_hat_k, breaks = 50, main = "Distribution of u_hat_k", xlab = "u_hat_k")
     # Step 4: 
+    # Question: why is this b_k in the paper? 
     ci_upper <- nu[k] - ifelse(k_k^2 == 0, 0, quantile(u_hat_k, probs = alpha / 2) / (k_k^2))
     ci_lower <- nu[k] - ifelse(k_k^2 == 0, 0, quantile(u_hat_k, probs = 1 - alpha / 2) / (k_k^2))
     
