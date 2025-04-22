@@ -1,5 +1,6 @@
 
 library(rTensor)
+# install.packages("MCMCpack")
 library(MCMCpack) # need to install
 
 

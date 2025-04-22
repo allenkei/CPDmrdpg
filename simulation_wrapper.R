@@ -58,22 +58,24 @@ simulate_scenario <- function(scenario, true_cp, num_node = 50, num_seq = 10) {
   
   return(results)
 }
-
+ 
 ###########
 # Run one #
 ###########
 
-scenario <- "f5" # f1, f2, f3, f4, f5
+scenario <- "f6" # f1, f2, f3, f4, f5
 if (scenario == "f1") {
   true_CP <- c()
 } else if (scenario == "f2") {
-  true_CP <- c(20, 60, 80, 160, 180) 
+  true_CP <- c(20, 60, 80, 160, 180)
 } else if (scenario == "f3") {
   true_CP <- c(50, 100, 150)
 } else if (scenario == "f4") {
   true_CP <- c(20, 60, 80, 160, 180)
 } else if (scenario == "f5") {
   true_CP <- c(50, 100, 150)
+} else if (scenario == "f6") {
+  true_CP <- c(80,140)
 } else {
   stop("Invalid scenario!")
 }
@@ -99,7 +101,7 @@ results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
   cat("Start time:", format(start_time), "\n")
   for (scenario in c("f1", "f2", "f3", "f4", "f5")) {
     
-    num_node <- 50
+    num_node <- 100
     num_seq <- 100
     
     if (scenario == "f1") {
@@ -112,10 +114,13 @@ results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
       true_CP <- c(20, 60, 80, 160, 180)
     } else if (scenario == "f5") {
       true_CP <- c(50, 100, 150)
+    } else if (scenario == "f6") {
+      true_CP <- c(80,140)
     } else {
       stop("Invalid scenario!")
     }
     
+    c(80,140)
     loc_start <- Sys.time()
     cat("\n==== Running scenario", scenario, "====\n")
     cat("Start time:", format(loc_start), "\n")
@@ -140,8 +145,9 @@ results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
 ############
 # Analysis #
 ############
-load("results/f5_50.RData")
+load("results/f1_50.RData")
 
+# One metric, refinement and original 
 num_thresholds <- dim(results[[1]])[2]
 summary_matrix <- matrix(NA, nrow = length(results), ncol = num_thresholds)
 
@@ -157,3 +163,21 @@ for (i in 1:length(results)) {
 rownames(summary_matrix) <- c("Greedy", "Greedy1")
 colnames(summary_matrix) <- paste0(rev(c(0.05, 0.075, 0.1, 0.125, 0.15, 0.2, 0.25)))
 summary_matrix
+
+# All metrics, refinement only 
+load("results/f5_100.RData")
+num_thresholds <- dim(results[[1]])[2]
+summary_matrix <- matrix(NA, nrow = 4, ncol = num_thresholds)
+
+for (i in 1:4) {
+  # ADJUST FOR DESIRED STAT
+  stat_matrix <- results[[2]][, , i] 
+  summary_matrix[i, ] <- colMeans(stat_matrix, na.rm = TRUE)
+  # summary_matrix[i, ] <- apply(stat_matrix, 2, median, na.rm = TRUE)
+  # summary_matrix[i, ] <- apply(stat_matrix, 2, function(x) sum(x != 0, na.rm = TRUE))
+  # summary_matrix[i, ] <- apply(stat_matrix, 2, function(x) sum(is.finite(x)))
+}
+
+colnames(summary_matrix) <- paste0(rev(c(0.05, 0.075, 0.1, 0.125, 0.15, 0.2, 0.25)))
+summary_matrix
+
