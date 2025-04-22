@@ -187,10 +187,10 @@ for (j in -5:5) {
 }
 
 source("CI.R")
-loc <- c(18, 60, 88, 164, 178)
-# refinement2(true_CP/2, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer))
-intervals <- construct_intervals(0.05, loc/2, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer), TRUE)
+loc <- c(22, 60, 88, 164, 178)
+nu <- refinement1(loc/2, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer))
 
+intervals <- construct_intervals(0.05, nu, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer), TRUE)
 cbind(c(true_CP/2), intervals) * 2
 ###################
 # Model Selection # 

@@ -237,43 +237,5 @@ refinement1 <- function(detected_CP, A, B, rank, verbose = FALSE) {
   return(b[2:(K+1)])
 }
 
-refinement2 <- function(detected_CP, A, B, rank, verbose = FALSE) {
-  K <- length(detected_CP)
-  if(K == 0) {return(detected_CP)}
-  
-  nu <- c(0, detected_CP, dim(A)[1])
-  eta_bar <- nu
-  for (k in 2:(K+1)) {
-    sk <- floor(9*nu[k-1]/10 + nu[k]/10)
-    ek <- ceiling(nu[k]/10 + 9*nu[k+1]/10)
-    if (verbose) {
-      cat("k = ", k, ", nu[c(k-1, k, k+1)] = ", nu[c(k-1, k, k+1)], ", sk = ", sk, ", ek = ", ek, ".\n")
-    }
-    
-    min_Qk <- Inf
-    
-    if ((ek-sk) > 1) {
-      for (eta in (sk+1):(ek-1)) {
-        B_nu_prev <- (1/(nu[k]-nu[k-1])) * as.tensor( apply(B[(nu[k-1]+1):nu[k], , , , drop = FALSE], c(2, 3, 4), sum) )
-        B_nu_next <- (1/(nu[k+1]-nu[k])) * as.tensor( apply(B[(nu[k]+1):nu[k+1], , , , drop = FALSE], c(2, 3, 4), sum) )
-        
-        P_nu_prev <- estimate_thpca(B_nu_prev, rank, tmax = 20)
-        P_nu_next <- estimate_thpca(B_nu_next, rank, tmax = 20)
-        
-        Qk <- sum(c(vapply( (sk+1):eta, function(t) (diff_frobenius(A[t, , , ], P_nu_prev))^2, numeric(1) ), 
-                    vapply( (eta+1):ek, function(t) (diff_frobenius(A[t, , , ], P_nu_next))^2, numeric(1) )))
-        
-        if (verbose) {
-          cat("\tsk = ", sk, ", ek = ", ek, ", eta = ", eta, ", Qk = ", Qk, ".\n")
-        }
-        if (Qk < min_Qk) {
-          min_Qk <- Qk
-          eta_bar[k] <- eta
-        }
-      }
-    } 
-  }
-  return(eta_bar[2:(K+1)])
-  
-}
+
     
