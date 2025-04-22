@@ -99,7 +99,7 @@ results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
   
   start_time <- Sys.time()
   cat("Start time:", format(start_time), "\n")
-  for (scenario in c("f1", "f2", "f3", "f4", "f5")) {
+  for (scenario in c("f6")) {
     
     num_node <- 100
     num_seq <- 100
@@ -115,12 +115,11 @@ results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
     } else if (scenario == "f5") {
       true_CP <- c(50, 100, 150)
     } else if (scenario == "f6") {
-      true_CP <- c(80,140)
+      true_CP <- c(70,140)
     } else {
       stop("Invalid scenario!")
     }
     
-    c(80,140)
     loc_start <- Sys.time()
     cat("\n==== Running scenario", scenario, "====\n")
     cat("Start time:", format(loc_start), "\n")
@@ -145,7 +144,7 @@ results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
 ############
 # Analysis #
 ############
-load("results/f1_50.RData")
+load("results/f6_50.RData")
 
 # One metric, refinement and original 
 num_thresholds <- dim(results[[1]])[2]
@@ -153,7 +152,7 @@ summary_matrix <- matrix(NA, nrow = length(results), ncol = num_thresholds)
 
 for (i in 1:length(results)) {
   # ADJUST FOR DESIRED STAT
-  stat_matrix <- results[[i]][, , 3] 
+  stat_matrix <- results[[i]][, , 4] 
   summary_matrix[i, ] <- colMeans(stat_matrix, na.rm = TRUE)
   # summary_matrix[i, ] <- apply(stat_matrix, 2, median, na.rm = TRUE)
   # summary_matrix[i, ] <- apply(stat_matrix, 2, function(x) sum(x != 0, na.rm = TRUE))
@@ -165,7 +164,7 @@ colnames(summary_matrix) <- paste0(rev(c(0.05, 0.075, 0.1, 0.125, 0.15, 0.2, 0.2
 summary_matrix
 
 # All metrics, refinement only 
-load("results/f5_100.RData")
+load("results/f6_100.RData")
 num_thresholds <- dim(results[[1]])[2]
 summary_matrix <- matrix(NA, nrow = 4, ncol = num_thresholds)
 
