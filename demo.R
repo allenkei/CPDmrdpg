@@ -151,9 +151,9 @@ results <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = re
 
 ###########################
 # Manual Refinement Check # 
+# Manual  Interval  Check #
 ###########################
-
-load("data/seq10n50s8.RData") # Scenario 1 with node 50
+load("data/seq10n50s3b.RData") # Scenario 1 with node 50
 # load("data/seq10n100s1.RData") # Scenario 1 with node 100
 # load("data/seq10n50s2.RData") # Scenario 2 with node 50
 # load("data/seq10n100s2.RData") # Scenario 2 with node 100
@@ -161,7 +161,7 @@ load("data/seq10n50s8.RData") # Scenario 1 with node 50
 # true_CP <- c(40, 60) # Sce 1, 5
 true_CP <- c(50,100) # Sce 2, 6*, 8*
 # true_CP <- c(50,100,150,200,250) # Sce 3
-# true_CP <- c(20, 60, 80, 160, 180) #Sce 3b
+true_CP <- c(20, 60, 80, 160, 180) #Sce 3b
 # true_CP <- c() # Sce 4
 # true_CP <- c(20,50,80) # Sce 7, 7b
 
@@ -186,9 +186,12 @@ for (j in -5:5) {
   print(refinement1(cp, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer)))
 }
 
+source("CI.R")
+loc <- c(18, 60, 88, 164, 178)
+# refinement2(true_CP/2, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer))
+intervals <- construct_intervals(0.05, loc/2, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer), TRUE)
 
-
-
+cbind(c(true_CP/2), intervals) * 2
 ###################
 # Model Selection # 
 ###################
