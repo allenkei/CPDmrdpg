@@ -8,8 +8,10 @@ refinement2 <- function(detected_CP, A, B, rank, verbose = FALSE) {
   nu <- c(0, detected_CP, dim(A)[1])
   eta_bar <- nu
   for (k in 2:(K+1)) {
-    sk <- floor(9*nu[k-1]/10 + nu[k]/10)
-    ek <- ceiling(nu[k]/10 + 9*nu[k+1]/10)
+    sk <- floor((nu[k-1]+nu[k])/2)
+    ek <- ceiling((nu[k+1]+nu[k])/2)
+    # sk <- floor(9*nu[k-1]/10 + nu[k]/10)
+    # ek <- ceiling(nu[k]/10 + 9*nu[k+1]/10)
     if (verbose) {
       cat("k = ", k, ", nu[c(k-1, k, k+1)] = ", nu[c(k-1, k, k+1)], ", sk = ", sk, ", ek = ", ek, ".\n")
     }
@@ -41,7 +43,7 @@ refinement2 <- function(detected_CP, A, B, rank, verbose = FALSE) {
   
 }
 
-construct_intervals <- function(alpha, detected_CP, A, B, rank, verbose = FALSE) {
+construct_CI <- function(alpha, detected_CP, A, B, rank, verbose = FALSE) {
   # detected CP is after first refinement
   # second refinement done within this function 
   
@@ -125,4 +127,20 @@ construct_intervals <- function(alpha, detected_CP, A, B, rank, verbose = FALSE)
     intervals[k-1, ] <- c(nu[k], b[k-1], ci_lower, ci_upper)
   }  
   intervals
+}
+
+coverage <- function(true_CP, starts, ends) {
+  if (length(true_CP) != length(starts)) {
+    warning("Incorrect number of intervals supplied.")
+    # return(NA)
+  }
+  
+  covered <- logical(length(true_CP))
+  
+  for (i in seq_along(true_CP)) {
+    cp <- true_CP[i]
+    covered[i] <- any(starts <= cp & cp <= ends)
+  }
+  
+  return(mean(covered))
 }

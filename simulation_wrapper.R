@@ -3,9 +3,13 @@ source("SBS.R")
 source("CUSUM.R")
 source("eval.R")
 source("gen_data.R")
+source("CI.R")
 
 
-simulate_scenario <- function(scenario, true_cp, num_node = 50, num_seq = 10) {
+simulate_sensitivity <- function(scenario, true_cp, num_node = 50, num_seq = 10) {
+  # Simulate_sensitivity computes 4 metrics
+  # For a range of thresholds
+  # Returning a 3-way tensor
   A.all_seq <- generate(scenario, num_node, 1, FALSE)
   
   num_T <- dim(A.all_seq)[2] 
@@ -58,12 +62,62 @@ simulate_scenario <- function(scenario, true_cp, num_node = 50, num_seq = 10) {
   
   return(results)
 }
+
+
+simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10, 
+                              threshold_C = 0.1, alpha = 0.05) {
+  # Simulate_coverage returns 4 metrics & interval coverage
+  # For a single threshold
+  # Returning a matrix
+  A.all_seq <- generate(scenario, num_node, 1, FALSE)
+  
+  num_T <- dim(A.all_seq)[2] 
+  num_node <- dim(A.all_seq)[3] 
+  num_layer <- dim(A.all_seq)[5] 
+  hat.rank <- c(15, 15, num_layer) # needed for model selection (Question: should be used as input to some FUNC)
+  
+  intervals <- construct_intervals(num_T/2, sqrt(1/2), 4)
+  
+  output_holder <- array(NA, dim = c(num_seq, 5))
+  
+  # report mean of metric for all simulated sequences
+  # can suppress print statements with verbose = FALSE (default TRUE)
+  for(seq_iter in 1:num_seq) {
+    cat("\nIteration", seq_iter, "begin.\n")
+    set.seed(seq_iter)
+    # Generate Data 1-by-1
+    A.all_seq <- generate(scenario, num_node, 1, FALSE)
+    A.tensor <- A.all_seq[1,,,,] # a particular sequence with dim 150  50  50   4
+    
+    # splitting data in half
+    A.tensor.even <- A.tensor[seq(2, num_T, by = 2), , , ]
+    B.tensor.odd  <- A.tensor[seq(1, num_T-1, by = 2), , , ] # named as B.tensor
+    
+    gains <- cusum_on_intervals(CUSUM_step1, A.tensor.even, verbose = FALSE, intervals, obj.B = B.tensor.odd)
+    results_g <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = gains, verbose = FALSE,
+                                   threshold = threshold_C * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2), 
+                                   method = "Greedy", obj.B = B.tensor.odd)
+    detected_CP <- refinement1(sort(results_g[[2]]$results[, 1]), A.tensor.even, B.tensor.odd, hat.rank)
+    output_holder[seq_iter, 1:4] <- as.numeric(eval_CP(true_CP, 2*detected_CP, num_T))
+    cat("\tDetected Greedy CP  :", 2*detected_CP, ". Metrics: ", output_holder[seq_iter, 1:4], "\n")
+    
+    
+    CI <- construct_CI(alpha, detected_CP, A.tensor.even, B.tensor.odd, hat.rank)
+    output_holder[seq_iter, 5] <- coverage(true_cp, CI[, 3]*2, CI[, 4]*2)
+    cat("\tRefined (Coverage) CP :", 2*CI[, 2], ". Coverage: ", output_holder[seq_iter, 5], "\n")
+  }
+  
+  results <- output_holder
+  save(results, file = paste0("results/coverage_", scenario, "_", num_node, ".RData"))
+  
+  return(results)
+}
  
 ###########
 # Run one #
 ###########
 
-scenario <- "f6" # f1, f2, f3, f4, f5
+scenario <- "f2" # f1, f2, f3, f4, f5
 if (scenario == "f1") {
   true_CP <- c()
 } else if (scenario == "f2") {
@@ -83,7 +137,8 @@ if (scenario == "f1") {
 num_node <- 50
 num_seq <- 3
 
-results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
+results <- simulate_sensitivity(scenario, true_CP, num_node, num_seq)
+results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
 
 ###########
 # Run all #
@@ -99,9 +154,9 @@ results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
   
   start_time <- Sys.time()
   cat("Start time:", format(start_time), "\n")
-  for (scenario in c("f6")) {
+  for (scenario in c("f2", "f3", "f4", "f5", "f6")) {
     
-    num_node <- 100
+    num_node <- 50
     num_seq <- 100
     
     if (scenario == "f1") {
@@ -124,7 +179,8 @@ results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
     cat("\n==== Running scenario", scenario, "====\n")
     cat("Start time:", format(loc_start), "\n")
     
-    results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
+    # results <- simulate_sensitivity(scenario, true_CP, num_node, num_seq)
+    results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
     
     end_time <- Sys.time()
     elapsed <- difftime(end_time, loc_start, units = "mins")
@@ -144,6 +200,8 @@ results <- simulate_scenario(scenario, true_CP, num_node, num_seq)
 ############
 # Analysis #
 ############
+
+# For multiple-threshold results
 load("results/f6_50.RData")
 
 # One metric, refinement and original 
@@ -180,3 +238,16 @@ for (i in 1:4) {
 colnames(summary_matrix) <- paste0(rev(c(0.05, 0.075, 0.1, 0.125, 0.15, 0.2, 0.25)))
 summary_matrix
 
+
+############
+# Analysis #
+############
+# For single-threshold results (with coverage)
+load("results/coverage_f6_50.RData")
+
+# Overall average metrics and coverage
+colMeans(results, na.rm = TRUE)
+
+# Average coverage for correct number of change points
+sum(results[, 1] == 0)
+mean(results[results[, 1] == 0, 5])

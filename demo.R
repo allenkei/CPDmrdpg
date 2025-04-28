@@ -3,7 +3,7 @@ source("SBS.R")
 source("CUSUM.R")
 source("model_selection.R")
 source("eval.R")
-
+source("CI.R")
 
 ########
 # DEMO #
@@ -190,8 +190,9 @@ source("CI.R")
 loc <- c(22, 60, 88, 164, 178)
 nu <- refinement1(loc/2, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer))
 
-intervals <- construct_intervals(0.05, nu, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer), TRUE)
-cbind(c(true_CP/2), intervals) * 2
+CI <- construct_CI(0.05, nu, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer), verbose = TRUE)
+cbind(c(true_CP/2), CI) * 2
+coverage(true_CP, CI[, 3]*2, CI[, 4]*2)
 ###################
 # Model Selection # 
 ###################
