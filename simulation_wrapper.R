@@ -243,7 +243,7 @@ summary_matrix
 # Analysis #
 ############
 # For single-threshold results (with coverage)
-load("results/coverage_f6_50.RData")
+load("results/coverage_f2_50.RData")
 
 # Overall average metrics and coverage
 colMeans(results, na.rm = TRUE)
@@ -251,3 +251,10 @@ colMeans(results, na.rm = TRUE)
 # Average coverage for correct number of change points
 sum(results[, 1] == 0)
 mean(results[results[, 1] == 0, 5])
+
+
+# f6 100%
+# f5 73% 100% among the 20 with correct number
+# f4 100%
+# f3 52%, 54% among the 81 with correct number
+# f2 79%
