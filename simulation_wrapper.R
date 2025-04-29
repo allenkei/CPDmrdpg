@@ -164,7 +164,7 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
   
   start_time <- Sys.time()
   cat("Start time:", format(start_time), "\n")
-  for (scenario in c("f1","f2", "f3", "f4", "f5", "f6")) {
+  for (scenario in c("f1","f2", "f3", "f4", "f5")) {
     
     num_node <- 50
     num_seq <- 100
@@ -254,6 +254,8 @@ summary_matrix
 ############
 # For single-threshold results (with coverage)
 load("results/coverage_f3_50.RData")
+
+# Original 4 metrics
 colMeans(results[[1]])
 
 # Coverage per change point, filtering -1
