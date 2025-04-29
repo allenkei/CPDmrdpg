@@ -192,7 +192,7 @@ nu <- refinement1(loc/2, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer
 
 CI <- construct_CI(0.05, nu, A.tensor.even, B.tensor.odd, rank = c(15, 15, num_layer), verbose = TRUE)
 cbind(c(true_CP/2), CI) * 2
-coverage(true_CP, CI[, 3]*2, CI[, 4]*2)
+coverage(true_CP, CI[, 2]*2, CI[, 3]*2, CI[, 4]*2)
 ###################
 # Model Selection # 
 ###################

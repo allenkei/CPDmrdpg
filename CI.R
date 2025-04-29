@@ -129,18 +129,68 @@ construct_CI <- function(alpha, detected_CP, A, B, rank, verbose = FALSE) {
   intervals
 }
 
-coverage <- function(true_CP, starts, ends) {
-  if (length(true_CP) != length(starts)) {
-    warning("Incorrect number of intervals supplied.")
-    # return(NA)
+# coverage <- function(true_CP, locs, starts, ends) {
+#   if (length(true_CP) != length(starts)) {
+#     warning("Incorrect number of intervals supplied.")
+#     # return(NA)
+#   }
+#   
+#   covered <- logical(length(true_CP))
+#   
+#   for (i in seq_along(true_CP)) {
+#     cp <- true_CP[i]
+#     covered[i] <- any(starts <= cp & cp <= ends)
+#   }
+#   
+#   match to middle
+#   covered \in {-1, 0, 1}
+#   lengths (again negative )
+#   
+#   return(covered, lengths)
+# }
+
+
+coverage <- function(true_CP, locs, starts, ends) {
+  covered <- rep(-1L, length(true_CP))  # default to -1 (no match)
+  lengths <- rep(-1L, length(true_CP))  # default to -1 (no match)
+  
+  # Case 1: fewer locs than true CPs => only evaluate closest true CPs
+  if (length(locs) < length(true_CP)) {
+    available <- rep(TRUE, n_true)
+    
+    for (i in 1:length(locs)) {
+      # Match each loc to closest available true_CP
+      dists <- abs(true_CP - locs[i])
+      dists[!available] <- Inf  # already matched
+      min_index <- which.min(dists)
+      
+      if (is.finite(dists[min_index])) {
+        available[min_index] <- FALSE
+        if (starts[i] <= true_CP[min_index] && true_CP[min_index] <= ends[i]) {
+          covered[min_index] <- 1L
+          lengths[min_index] <- ends[i] - starts[i]
+        } else {
+          covered[min_index] <- 0L
+          lengths[min_index] <- ends[i] - starts[i]
+        }
+      }
+    }
+  } # Case 2: enough locs to evaluate every true CP
+  else {
+    for (i in 1:length(true_CP)) {
+      # Find closest loc
+      dists <- abs(locs - true_CP[i])
+      j <- which.min(dists)
+      
+      if (starts[j] <= true_CP[i] && true_CP[i] <= ends[j]) {
+        covered[i] <- 1L
+        lengths[i] <- ends[j] - starts[j]
+      } else {
+        covered[i] <- 0L
+        lengths[i] <- ends[j] - starts[j]
+      }
+    }
   }
   
-  covered <- logical(length(true_CP))
-  
-  for (i in seq_along(true_CP)) {
-    cp <- true_CP[i]
-    covered[i] <- any(starts <= cp & cp <= ends)
-  }
-  
-  return(mean(covered))
+  return(list(covered = covered, lengths = lengths))
 }

@@ -49,8 +49,8 @@ simulate_sensitivity <- function(scenario, true_cp, num_node = 50, num_seq = 10)
       output_holder_gl1[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_gl1, num_T))
       
       cat("Threshold: ", threshold_list[i], "\n")
-      cat("\tDetected Greedy CP  :", 2*detected_CP_g, ". Metrics: ", output_holder_g[seq_iter, i, ], "\n")
-      cat("\tRefinement Greedy   :", 2*detected_CP_gl1, ". Metrics: ", output_holder_gl1[seq_iter, i, ], "\n")
+      cat("\tDetected Greedy CP  :", 2*detected_CP_g, "Metrics: ", output_holder_g[seq_iter, i, ], "\n")
+      cat("\tRefinement Greedy   :", 2*detected_CP_gl1, "Metrics: ", output_holder_gl1[seq_iter, i, ], "\n")
     }
   }
   
@@ -78,7 +78,9 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
   
   intervals <- construct_intervals(num_T/2, sqrt(1/2), 4)
   
-  output_holder <- array(NA, dim = c(num_seq, 5))
+  output_holder <- array(NA, dim = c(num_seq, 4))
+  coverage_holder <- array(NA, dim = c(num_seq, length(true_cp)))
+  lengths_holder <- array(NA, dim = c(num_seq, length(true_cp)))
   
   # report mean of metric for all simulated sequences
   # can suppress print statements with verbose = FALSE (default TRUE)
@@ -98,16 +100,24 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
                                    threshold = threshold_C * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2), 
                                    method = "Greedy", obj.B = B.tensor.odd)
     detected_CP <- refinement1(sort(results_g[[2]]$results[, 1]), A.tensor.even, B.tensor.odd, hat.rank)
-    output_holder[seq_iter, 1:4] <- as.numeric(eval_CP(true_CP, 2*detected_CP, num_T))
-    cat("\tDetected Greedy CP  :", 2*detected_CP, ". Metrics: ", output_holder[seq_iter, 1:4], "\n")
+    output_holder[seq_iter, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP, num_T))
+    cat("\tDetected Greedy CP  :", 2*detected_CP, "Metrics: ", output_holder[seq_iter, ], "\n")
     
     
     CI <- construct_CI(alpha, detected_CP, A.tensor.even, B.tensor.odd, hat.rank)
-    output_holder[seq_iter, 5] <- coverage(true_cp, CI[, 3]*2, CI[, 4]*2)
-    cat("\tRefined (Coverage) CP :", 2*CI[, 2], ". Coverage: ", output_holder[seq_iter, 5], "\n")
+    coverage_out <- coverage(true_cp, CI[, 2]*2, CI[, 3]*2, CI[, 4]*2)
+    coverage_holder[seq_iter, ] <- coverage_out$covered
+    lengths_holder[seq_iter, ] <- coverage_out$lengths
+    cat("\tRefined (Coverage) CP :", 2*CI[, 2], "Coverage: ", coverage_holder[seq_iter, ], 
+        "Lengths: ", lengths_holder[seq_iter, ],"\n")
   }
   
   results <- output_holder
+  results <- list(
+    output_holder,
+    coverage_holder,
+    lengths_holder
+  )
   save(results, file = paste0("results/coverage_", scenario, "_", num_node, ".RData"))
   
   return(results)
@@ -117,7 +127,7 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
 # Run one #
 ###########
 
-scenario <- "f1" # f1, f2, f3, f4, f5, f6
+scenario <- "f3" # f1, f2, f3, f4, f5, f6
 if (scenario == "f1") {
   true_CP <- c(70, 140)
 } else if (scenario == "f2") {
@@ -244,13 +254,22 @@ summary_matrix
 ############
 # For single-threshold results (with coverage)
 load("results/coverage_f3_50.RData")
+colMeans(results[[1]])
 
-# Overall average metrics and coverage
-colMeans(results, na.rm = TRUE)
+# Coverage per change point, filtering -1
+apply(results[[2]], 2, function(col) {mean(col[col != -1], na.rm = TRUE)})
+# Average coverage, filtering -1
+mean(apply(results[[2]], 2, function(col) { mean(col[col != -1], na.rm = TRUE)}))
 
-# Average coverage for correct number of change points
-sum(results[, 1] == 0)
-mean(results[results[, 1] == 0, 5])
+# Lengths per change point, filtering -1
+apply(results[[3]], 2, function(col) {mean(col[col != -1], na.rm = TRUE)})
+# Average lenghts, filtering -1
+mean(apply(results[[3]], 2, function(col) { mean(col[col != -1], na.rm = TRUE)}))
+
+# Median lengths per change point, filtering -1
+apply(results[[3]], 2, function(col) {median(col[col != -1], na.rm = TRUE)})
+
+
 
 
 # f6 100%
