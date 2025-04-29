@@ -58,7 +58,7 @@ simulate_sensitivity <- function(scenario, true_cp, num_node = 50, num_seq = 10)
     greedy = output_holder_g,
     greedyl1 = output_holder_gl1
   )
-  save(results, file = paste0("results/", scenario, "_", num_node, ".RData"))
+  #save(results, file = paste0("results/", scenario, "_", num_node, ".RData"))
   
   return(results)
 }
@@ -117,9 +117,9 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
 # Run one #
 ###########
 
-scenario <- "f2" # f1, f2, f3, f4, f5, f6
+scenario <- "f1" # f1, f2, f3, f4, f5, f6
 if (scenario == "f1") {
-  true_CP <- c()
+  true_CP <- c(70, 140)
 } else if (scenario == "f2") {
   true_CP <- c(20, 60, 80, 160, 180)
 } else if (scenario == "f3") {
@@ -129,7 +129,7 @@ if (scenario == "f1") {
 } else if (scenario == "f5") {
   true_CP <- c(50, 100, 150)
 } else if (scenario == "f6") {
-  true_CP <- c(70,140)
+  true_CP <- c()
 } else {
   stop("Invalid scenario!")
 }
@@ -154,13 +154,13 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
   
   start_time <- Sys.time()
   cat("Start time:", format(start_time), "\n")
-  for (scenario in c("f2", "f3", "f4", "f5", "f6")) {
+  for (scenario in c("f1","f2", "f3", "f4", "f5", "f6")) {
     
     num_node <- 50
     num_seq <- 100
     
     if (scenario == "f1") {
-      true_CP <- c()
+      true_CP <- c(70, 140)
     } else if (scenario == "f2") {
       true_CP <- c(20, 60, 80, 160, 180)
     } else if (scenario == "f3") {
@@ -170,7 +170,7 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
     } else if (scenario == "f5") {
       true_CP <- c(50, 100, 150)
     } else if (scenario == "f6") {
-      true_CP <- c(70,140)
+      true_CP <- c()
     } else {
       stop("Invalid scenario!")
     }

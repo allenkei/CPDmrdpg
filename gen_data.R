@@ -3,12 +3,12 @@ source("utility.R")
 
 
 # Kyles Generate function
-# f1: No change, T = 200
+# f1: Directed Dirichlet, T = 150 (3 change points)
 # f2: Flip layers and change block numbers, T = 200 (5 change points) 
 # f3: Block size change, first layer only, change to T = 200 (3 change points 1-2-3-1)
 # f4: Sparsity fluctuates, T = 200 (5 change points 1-2-3-2-1-2)
 # f5: Sparsity, weak difference, T = 200 (3 change points 1-2-3-1)
-# f6: Directed Dirichlet, T = 150 (3 change points)
+# f6: No change, T = 200
 
 
 generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
@@ -17,26 +17,22 @@ generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
   num_layer <- 4
   
   if(scenario == "f1"){
-    # Old Scenario 4, extended
-    num_block_before <- 4 # same
-    num_block_after <- 4 # same
-    FL = FALSE # NO FLIP
     
-    sbm_params <- get_sbm_params(n=num_node, L=num_layer, n_c=c(num_block_before, num_block_after), flip_layer=FL)
-    probability_1 = sbm_params[[1]] # ONLY USE THIS
+    cp_truth <- c(70, 140)
+    d <- 5
     
     A.all_seq <- array(NA, c(num_seq, num_time, num_node, num_node, num_layer)) # i.e. 10 sequences empty
     
     # begin simulate data
     for(seq_iter in 1:num_seq){
+      params <- get_dirichlet_params(num_node, num_node, num_layer, d)
+      X <- params[[1]]; Y <- params[[2]] # FIXED latent position
+      W_1 <- params[[3]]; W_2 <- params[[4]]; # DIFFERENT weights
       
-      A.tensor <- array(NA, c(num_time, num_node, num_node, num_layer)) # 1 sequence
-      
-      # T from 1 to 150 (otherwise change the for loop)
-      for(t_iter in 1:200) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
-      
-      A.all_seq[seq_iter,,,,] <- A.tensor
-    }; rm(seq_iter, A.tensor)
+      A.all_seq[seq_iter,,,,] <- get_data_cp_dirichlet(num_time, cp_truth, num_node, num_node, num_layer, 
+                                                       X, Y, W_1, W_2, directed = TRUE)
+    }
+    
     
   } else if(scenario == "f2"){
     # Old Scenario 3b
@@ -163,20 +159,26 @@ generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
     }; rm(seq_iter, A.tensor)
   } else if(scenario == "f6"){
     
-    cp_truth <- c(70, 140)
-    d <- 3
+    num_block_before <- 4 # same
+    num_block_after <- 4 # same
+    FL = FALSE # NO FLIP
+    
+    sbm_params <- get_sbm_params(n=num_node, L=num_layer, n_c=c(num_block_before, num_block_after), flip_layer=FL)
+    probability_1 = sbm_params[[1]] # ONLY USE THIS
     
     A.all_seq <- array(NA, c(num_seq, num_time, num_node, num_node, num_layer)) # i.e. 10 sequences empty
     
     # begin simulate data
     for(seq_iter in 1:num_seq){
-      params <- get_dirichlet_params(num_node, num_node, num_layer, d)
-      dirichlet_xy_1 <- params[[1]]; dirichlet_xy_2 <- params[[2]]
-      W_1 <- params[[3]]; W_2 <- params[[4]]
       
-      A.all_seq[seq_iter,,,,] <- get_data_cp_dirichlet(num_time, cp_truth, num_node, num_node, 
-                                                       num_layer, dirichlet_xy_1, W_1, dirichlet_xy_2, W_2, directed = TRUE)
-    }
+      A.tensor <- array(NA, c(num_time, num_node, num_node, num_layer)) # 1 sequence
+      
+      # T from 1 to 150 (otherwise change the for loop)
+      for(t_iter in 1:200) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+      
+      A.all_seq[seq_iter,,,,] <- A.tensor
+    }; rm(seq_iter, A.tensor)
+    
   }
   
   if (save == TRUE) {save(A.all_seq, file = paste0("data/seq",num_seq,"n",num_node,scenario,".RData"))}

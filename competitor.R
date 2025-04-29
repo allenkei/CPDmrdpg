@@ -137,6 +137,35 @@ Evaluation_kerSeg <- function(y_array, p_threshold, is_experiment=FALSE, true_CP
     
     return(result)
     
+  }else{
+    
+    y_data <- y_array
+    num_time <- dim(y_data)[1]
+    n <- dim(y_data[1,,,])[1]
+    L <- dim(y_data[1,,,])[3]
+    
+    if(pre_process == "kerSeg_net"){
+      
+      # vectorize network
+      temp <- matrix(NA, nrow=num_time, ncol=n*n*L)
+      for(iter in 1:num_time){temp[iter,] <- c(y_data[iter,,,])}
+      
+    }else if(pre_process == "kerSeg_fro"){
+      
+      # Frobenius norm by layer
+      temp <- matrix(NA, nrow=num_time, ncol=L)
+      for(iter in 1:num_time){
+        for (l in 1:L) {
+          temp[iter, l] <- norm(as.matrix(y_data[iter, , , l]), type = "F")  
+        }
+      }
+      
+    }
+    
+    est_CP <- binary_search(temp, c(), 1, num_time, p_threshold); rm(temp)
+    est_CP <- sort(est_CP)
+    
+    return(est_CP)
   }
   
 }
@@ -283,6 +312,35 @@ Evaluation_gSeg <- function(y_array, p_threshold, is_experiment=FALSE, true_CP, 
     
     return(result)
     
+  }else{
+    
+    y_data <- y_array
+    num_time <- dim(y_data)[1]
+    n <- dim(y_data[1,,,])[1]
+    L <- dim(y_data[1,,,])[3]
+    
+    if(pre_process == "gSeg_net"){
+      
+      # vectorize network
+      temp <- matrix(NA, nrow=num_time, ncol=n*n*L)
+      for(iter in 1:num_time){temp[iter,] <- c(y_data[iter,,,])}
+      
+    }else if(pre_process == "gSeg_fro"){
+      
+      # Frobenius norm by layer
+      temp <- matrix(NA, nrow=num_time, ncol=L)
+      for(iter in 1:num_time){
+        for (l in 1:L) {
+          temp[iter, l] <- norm(as.matrix(y_data[iter, , , l]), type = "F")  
+        }
+      }
+      
+    }
+    
+    est_CP <- binary_search(temp, c(), 1, num_time, p_threshold); rm(temp)
+    est_CP <- sort(est_CP)
+    
+    return(est_CP)
   }
   
 }

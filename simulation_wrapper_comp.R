@@ -12,33 +12,36 @@ source("gen_data.R")
 source("competitor.R")
 
 
-simulate_scenario_competitor <- function(scenario, true_cp, num_node = 50, num_seq = 10, competitor = "kerSeg_net") {
+simulate_scenario_competitor <- function(scenario, true_cp, num_node, num_seq, competitor) {
   # competitor: kerSeg_net, kerSeg_fro, gSeg_net, gSeg_fro
   
   temp <- generate(scenario, num_node, 1, FALSE)
   num_time <- dim(temp)[2]; num_layer <- dim(temp)[5]; rm(temp)
   
+  results <- matrix(NA, nrow = num_seq, ncol = 4) # 4 metrics
   
-  A.all_seq <- array(NA, c(num_seq, num_time, num_node, num_node, num_layer)) # i.e. 10 sequences empty
   
   for(seq_iter in 1:num_seq) {
     # Generate Data 1-by-1
     set.seed(seq_iter)
-    A.all_seq[seq_iter,,,,] <- generate(scenario, num_node, 1, FALSE) # (1,200,50,50,4) # NOTE the first dim = 1
-  }
-  
-  
-  if(competitor == "kerSeg_net"){
-    results <- Evaluation_kerSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_CP, competitor)
+    cat("\nIteration", seq_iter, "begin.\n")
     
-  }else if(competitor == "kerSeg_fro"){
-    results <- Evaluation_kerSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_CP, competitor)
+    A.all_seq <- generate(scenario, num_node, 1, FALSE) # (1,200,50,50,4) # NOTE the first dim = 1
     
-  }else if(competitor == "gSeg_net"){
-    results <- Evaluation_gSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_CP, competitor)
+    if(competitor == "kerSeg_net"){
+      results[seq_iter,] <- Evaluation_kerSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_cp, competitor)
+      
+    }else if(competitor == "kerSeg_fro"){
+      results[seq_iter,] <- Evaluation_kerSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_cp, competitor)
+      
+    }else if(competitor == "gSeg_net"){
+      results[seq_iter,] <- Evaluation_gSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_cp, competitor)
+      
+    }else if(competitor == "gSeg_fro"){
+      results[seq_iter,] <- Evaluation_gSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_cp, competitor)
+      
+    }
     
-  }else if(competitor == "gSeg_fro"){
-    results <- Evaluation_gSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_CP, competitor)
     
   }
   
@@ -56,15 +59,15 @@ simulate_scenario_competitor <- function(scenario, true_cp, num_node = 50, num_s
 ###########
 
 
+scenario <- "f1"
 
-
-for (scenario in c("f1", "f2", "f3", "f4", "f5")) {
+for (scenario in c("f1")) { ##### c("f1", "f2", "f3", "f4", "f5")
   
-  num_node <- 50
-  num_seq <- 10
+  num_node <- 100
+  num_seq <- 100
   
   if (scenario == "f1") {
-    true_CP <- c()
+    true_CP <- true_CP <- c(70, 140)
   } else if (scenario == "f2") {
     true_CP <- c(20, 60, 80, 160, 180)
   } else if (scenario == "f3") {
@@ -73,14 +76,16 @@ for (scenario in c("f1", "f2", "f3", "f4", "f5")) {
     true_CP <- c(20, 60, 80, 160, 180)
   } else if (scenario == "f5") {
     true_CP <- c(50, 100, 150)
-  } 
+  } else if (scenario == "f6") {
+    true_CP <- c()
+  }
   
-
+  
   results <- simulate_scenario_competitor(scenario, true_CP, num_node, num_seq, "kerSeg_net")
   results <- simulate_scenario_competitor(scenario, true_CP, num_node, num_seq, "kerSeg_fro")
   results <- simulate_scenario_competitor(scenario, true_CP, num_node, num_seq, "gSeg_net")
   results <- simulate_scenario_competitor(scenario, true_CP, num_node, num_seq, "gSeg_fro")
   
 }
-  
+
 

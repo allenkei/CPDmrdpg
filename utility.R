@@ -152,6 +152,9 @@ get_sbm_VS_FL_params <- function(n, L, block_sizes1, block_sizes2, n_c=c(4, 4)){
   return(list(probability_1, probability_2))
 }
 
+
+
+
 get_sbm_params_spa_inc <- function(n, L, n_c=c(4, 4, 4), epsilon = 0.05){
   # output probability matrix before and after, each with (n,n L)
   # block size fixed
@@ -169,7 +172,7 @@ get_sbm_params_spa_inc <- function(n, L, n_c=c(4, 4, 4), epsilon = 0.05){
   
   for (layer in 1: L) {
     
-    p1_vals <- sapply(prob_ranges, function(rng) runif(1, rng[1]/2, rng[2]/2)) # inter is lower
+    p1_vals <- sapply(prob_ranges, function(rng) runif(1, rng[1]/2, rng[2]/2))
     p2_vals <- sapply(prob_ranges, function(rng) runif(1, rng[1], rng[2]))
     
     # Generate the blockwise adjacency matrices for each set of probabilities
@@ -206,117 +209,33 @@ generate_tensor_probability_directed <- function(n_1, n_2, L, probability){
 
 
 
-sim_SBM_array <- function(num_seq=1, n=50, rho=0.5, L=4, true_CP=c(25,50,75), num_time=100){
-  
-  # This function directly output the adjacency matrix with size (num_seq, num_time, n, n, L)
-  # rho controls the temporal dependency
-  
-  A.all_seq <- array(NA, c(num_seq, num_time, n, n, L)) # i.e. 10 sequences empty
-  
-  for(seq_iter in 1:num_seq){
-    
-    
-    A.tensor <- array(NA, c(num_time, n, n, L)) # 1 sequence
-    
-    K = 3
-    v = true_CP
-    
-    
-    for (layer in 1: L){ ### FOR EACH LAYER, THEN FOR EACH TIME T
-      
-      for(t in 1:num_time){
-        
-        if( t==1 || t==(v[2]+1) ){ # t=1 or t=51
-          
-          P =  matrix(0.3,n,n)
-          P[1:floor(n/K), 1:floor(n/K)] = 0.5
-          P[(1+floor(n/K)):(2*floor(n/K)),(1+floor(n/K)):(2*floor(n/K)) ] = 0.5
-          P[(1+2*floor(n/K)):n,(1+2*floor(n/K)):n ] = 0.5
-          diag(P) = 0
-          
-          A = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),P),n,n)
-          
-        }
-        
-        if(t == (v[1]+1) || t == (v[3]+1)){ # t=26 or t=76
-          
-          Q =  matrix(0.2,n,n)
-          Q[1:floor(n/K), 1:floor(n/K)] = 0.45
-          Q[(1+floor(n/K)):(2*floor(n/K)),(1+floor(n/K)):(2*floor(n/K)) ] = 0.45
-          Q[(1+2*floor(n/K)):n,(1+2*floor(n/K)):n ] = 0.45
-          diag(Q) = 0
-          
-          A = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),Q),n,n)
-          
-        }
-        
-        if( (t > 1 && t <= v[1])  ||  (t > v[2] && t <= v[3]) ){ # t=2 to t=25 or t=51 to t=75
-          
-          aux1 = (1-P)*rho + P # (1-E(t+1))*rho + E(t+1) if A(t) = 1
-          aux2 = P*(1-rho) # (1-E(t+1))*rho + E(t+1) if A(t) = 0
-          
-          aux1 = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),aux1),n,n)
-          aux2 = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),aux2),n,n)
-          A =  aux1*A + aux2*(1-A)
-          
-        }
-        
-        if( (t > v[1] && t <= v[2]) || ((t > v[3] && t <= num_time)) ){ # t=27 to t=50 or t=77 to t=100
-          
-          aux1 = (1-Q)*rho + Q
-          aux2 = Q*(1-rho)
-          
-          aux1 = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),aux1),n,n)
-          aux2 = matrix(rbinom(matrix(1,n,n),matrix(1,n,n),aux2),n,n)
-          A =  aux1*A + aux2*(1-A)
-          
-        }
-        
-        diag(A) <- 0
-        A.tensor[t,,,layer] = A
-        
-      }
-      
-    }
-    
-    
-    A.all_seq[seq_iter,,,,] <- A.tensor
-    
-  }
-  
-  return(A.all_seq)
-}
-
-
-
-
-
 
 
 
 get_dirichlet_params <- function(n_1, n_2, L, d){
   
-  # set.seed(n_1*n_2*L*d)
-  
   dirichlet_xy_1 = list(x = rep(1, d), y = rep(1, d))
-  dirichlet_xy_2 = list(x = rep(500, d), y = rep(500, d))
+  #dirichlet_xy_2 = list(x = rep(500, d), y = rep(500, d))
   
-  W_1 =  array(NA,c(d, d, L))
+  # FIXED latent position
+  X = rdirichlet(n_1, dirichlet_xy_1$x) # n, d
+  Y = rdirichlet(n_2, dirichlet_xy_1$y) # n, d
+  
   prob = seq(0,1,  1/(4*L))
+  
+  # before CP
+  W_1 =  array(NA,c(d, d, L))
   for (layer in 1: L){
     W_1[, , layer] = matrix(runif(d^2,prob[2*L+layer], prob[2*L+layer+1]), ncol=d) 
   }
   
-  #p_1 = runif(1, prob[2*L+layer], prob[2*L+layer+1])
-  #p_2 = runif(1, prob[3*L+layer], prob[3*L+layer+1])
-  
+  # after CP
   W_2 =  array(NA,c(d, d, L))
-  prob = seq(0,1,  1/(4*L))
-  for (layer in L:1){
+  for (layer in L: 1){  # reverse order
     W_2[, , layer] = matrix(runif(d^2,prob[3*L+layer], prob[3*L+layer+1]), ncol=d) 
   }
   
-  return(list(dirichlet_xy_1, dirichlet_xy_2, W_1, W_2)) # WEIGHTS W1 ARE IDENTICAL 
+  return(list(X, Y, W_1, W_2)) 
 }
 
 
@@ -324,23 +243,20 @@ get_dirichlet_params <- function(n_1, n_2, L, d){
 
 
 
-generate_tensor_dirichlet <- function(n_1, n_2, L, W,
-                                      dirichlet_x, dirichlet_y, directed = TRUE){
+generate_tensor_dirichlet <- function(n_1, n_2, L, W, X, Y, directed = TRUE){
+  
   dim_ = c(n_1, n_2, L)
   A = array(NA,dim_)
   probability = array(NA,dim_)
   
   if (directed){
     for (layer in 1: L){
-      temp_1 = rdirichlet(n_1, dirichlet_x)
-      temp_2 = rdirichlet(n_2, dirichlet_y)
-      probability[, , layer] = temp_1  %*% W[, , layer] %*% t(temp_2)
+      probability[, , layer] = X  %*% W[, , layer] %*% t(Y)
       A[, , layer] = matrix(rbinom(matrix(1,n_1,n_2),matrix(1,n_1,n_2), probability[ , , layer]),n_1,n_2)
     }
   } 
   
-  
-  return(A)
+  return(A) # (n,n,L) the network at one time t
 }
 
 
@@ -350,24 +266,13 @@ generate_tensor_dirichlet <- function(n_1, n_2, L, W,
 
 
 
-get_data_cp_dirichlet <- function(num_time, cp_truth, n_1, n_2, L, dirichlet_xy_1, W_1, dirichlet_xy_2, W_2, directed = TRUE){
-  
-  # cp_truth <- c(50, 100) # num_time <- 150
+get_data_cp_dirichlet <- function(num_time, cp_truth, n_1, n_2, L, X, Y, W_1, W_2, directed = TRUE){
   
   A_array <- array(0, c(num_time, n_1, n_2, L))
   
-  for (t in 1:cp_truth[1]){
-    A_array[t, , ,] <- generate_tensor_dirichlet(n_1, n_2, L, W_1,
-                                                 dirichlet_x = dirichlet_xy_1$x,
-                                                 dirichlet_y = dirichlet_xy_1$y, directed)}
-  for (t in (cp_truth[1] + 1):(cp_truth[2])){
-    A_array[t, , ,] <- generate_tensor_dirichlet(n_1, n_2, L, W_2,
-                                                 dirichlet_x = dirichlet_xy_2$x, 
-                                                 dirichlet_y = dirichlet_xy_2$y, directed)}
-  for (t in (cp_truth[2] + 1):num_time){
-    A_array[t, , ,] <- generate_tensor_dirichlet(n_1, n_2, L, W_1,
-                                                 dirichlet_x = dirichlet_xy_1$x,
-                                                 dirichlet_y = dirichlet_xy_1$y, directed)}
+  for (t in 1:cp_truth[1]){ A_array[t, , ,] <- generate_tensor_dirichlet(n_1, n_2, L, W_1, X, Y, directed) }
+  for (t in (cp_truth[1] + 1):(cp_truth[2])){ A_array[t, , ,] <- generate_tensor_dirichlet(n_1, n_2, L, W_2, X, Y, directed) }
+  for (t in (cp_truth[2] + 1):num_time){ A_array[t, , ,] <- generate_tensor_dirichlet(n_1, n_2, L, W_1, X, Y, directed) }
   
   return(A_array)
 }
