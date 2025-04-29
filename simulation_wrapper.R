@@ -117,7 +117,7 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
 # Run one #
 ###########
 
-scenario <- "f2" # f1, f2, f3, f4, f5
+scenario <- "f2" # f1, f2, f3, f4, f5, f6
 if (scenario == "f1") {
   true_CP <- c()
 } else if (scenario == "f2") {
@@ -243,7 +243,7 @@ summary_matrix
 # Analysis #
 ############
 # For single-threshold results (with coverage)
-load("results/coverage_f2_50.RData")
+load("results/coverage_f3_50.RData")
 
 # Overall average metrics and coverage
 colMeans(results, na.rm = TRUE)
@@ -254,7 +254,7 @@ mean(results[results[, 1] == 0, 5])
 
 
 # f6 100%
-# f5 73% 100% among the 20 with correct number
+# f5 73%, 100% among the 20 with correct number
 # f4 100%
 # f3 52%, 54% among the 81 with correct number
 # f2 79%
