@@ -156,7 +156,7 @@ coverage <- function(true_CP, locs, starts, ends) {
   
   # Case 1: fewer locs than true CPs => only evaluate closest true CPs
   if (length(locs) < length(true_CP)) {
-    available <- rep(TRUE, n_true)
+    available <- rep(TRUE, length(true_CP))
     
     for (i in 1:length(locs)) {
       # Match each loc to closest available true_CP
