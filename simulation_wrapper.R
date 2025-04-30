@@ -255,10 +255,9 @@ summary_matrix
 # For single-threshold results (with coverage)
 load("results/coverage_f5_50.RData")
 
-# Original 4 metrics
-colMeans(results[[1]])
-results[[2]]
-results[[3]]
+colMeans(results[[1]]) # Original 4 metrics
+results[[2]] # Coverage indicators
+results[[3]] # Lengths, (-1 if not estimated)
 
 # Number of non-evaluated
 apply(results[[2]], 2, function(col) {sum(col == -1, na.rm = TRUE)})
