@@ -127,7 +127,7 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
 # Run one #
 ###########
 
-scenario <- "f3" # f1, f2, f3, f4, f5, f6
+scenario <- "f5" # f1, f2, f3, f4, f5, f6
 if (scenario == "f1") {
   true_CP <- c(70, 140)
 } else if (scenario == "f2") {
@@ -253,29 +253,54 @@ summary_matrix
 # Analysis #
 ############
 # For single-threshold results (with coverage)
-load("results/coverage_f3_50.RData")
+load("results/coverage_f5_50.RData")
 
 # Original 4 metrics
 colMeans(results[[1]])
+results[[2]]
+results[[3]]
+
+# Number of non-evaluated
+apply(results[[2]], 2, function(col) {sum(col == -1, na.rm = TRUE)})
 
 # Coverage per change point, filtering -1
 apply(results[[2]], 2, function(col) {mean(col[col != -1], na.rm = TRUE)})
 # Average coverage, filtering -1
-mean(apply(results[[2]], 2, function(col) { mean(col[col != -1], na.rm = TRUE)}))
+mean(results[[2]][results[[2]] != -1], na.rm = TRUE)
 
 # Lengths per change point, filtering -1
 apply(results[[3]], 2, function(col) {mean(col[col != -1], na.rm = TRUE)})
 # Average lenghts, filtering -1
-mean(apply(results[[3]], 2, function(col) { mean(col[col != -1], na.rm = TRUE)}))
+mean(results[[3]][results[[3]] != -1], na.rm = TRUE)
 
 # Median lengths per change point, filtering -1
 apply(results[[3]], 2, function(col) {median(col[col != -1], na.rm = TRUE)})
 
 
 
+# f1 100% overall, 
+  # 100% each, 
+  # 0 not evaluated, 
+  # length 0.01357
 
-# f6 100%
-# f5 73%, 100% among the 20 with correct number
-# f4 100%
-# f3 52%, 54% among the 81 with correct number
-# f2 79%
+# f2 79.4% overall, 
+  # 41%, 100%, 100%, 92%, 64% 
+  # 0 not evaluated
+  # length 1.517
+
+# f3 56.2% overall, 
+  # 17%, 64%, 81%
+  # 19 not evaluated (17, 2, 0)
+  # length 7.57
+
+# f4 100% overall, 
+  # 100% each, 
+  # 0 not evaluated, 
+  # length 1.962
+
+# f5 100% overall, 
+  # 100% each, 
+  # 80 not evaluated (35, 45, 0)
+  # length 1.961
+
+
