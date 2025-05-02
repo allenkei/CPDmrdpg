@@ -127,7 +127,7 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
 # Run one #
 ###########
 
-scenario <- "f5" # f1, f2, f3, f4, f5, f6
+scenario <- "f1" # f1, f2, f3, f4, f5, f6
 if (scenario == "f1") {
   true_CP <- c(70, 140)
 } else if (scenario == "f2") {
@@ -144,10 +144,10 @@ if (scenario == "f1") {
   stop("Invalid scenario!")
 }
 
-num_node <- 50
-num_seq <- 3
+num_node <- 100
+num_seq <- 100
 
-results <- simulate_sensitivity(scenario, true_CP, num_node, num_seq)
+#results <- simulate_sensitivity(scenario, true_CP, num_node, num_seq)
 results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
 
 ###########
