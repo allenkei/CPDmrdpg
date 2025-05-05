@@ -4,6 +4,7 @@ library(rTensor)
 source("SBS.R")
 source("CUSUM.R")
 source("competitor.R")
+source("CI.R")
 
 
 
@@ -52,11 +53,13 @@ output <- list()
 for (i in 1:(length(results_g)-1)) {
   detected_CP_g <- sort(results_g[[i+1]]$results[, 1])
   detected_CP_gl1 <- refinement1(detected_CP_g, A.tensor.even, B.tensor.odd, hat.rank)
+  CI <- construct_CI(alpha=0.05, detected_CP_gl1, A.tensor.even, B.tensor.odd, hat.rank)
   
   output[[i]] <- list()
   output[[i]]$threshold <- results_g[[i+1]]$threshold
   output[[i]]$thres_ratio <- rev(threshold_ratio)[i]
   output[[i]]$detected_CP <- data_names[2* detected_CP_gl1]
+  output[[i]]$CI <- CI*2
   
 }
 
@@ -85,10 +88,10 @@ gSeg_net
 gSeg_fro
 
 
-save(output, file = paste0("real_data/results/trade_proposed.RData"))
-save(kerSeg_net, file = paste0("real_data/results/trade_kerSeg_net.RData"))
-save(kerSeg_fro, file = paste0("real_data/results/trade_kerSeg_fro.RData"))
-save(gSeg_net, file = paste0("real_data/results/trade_gSeg_net.RData"))
-save(gSeg_fro, file = paste0("real_data/results/trade_gSeg_fro.RData"))
+#save(output, file = paste0("real_data/results/trade_proposed.RData"))
+#save(kerSeg_net, file = paste0("real_data/results/trade_kerSeg_net.RData"))
+#save(kerSeg_fro, file = paste0("real_data/results/trade_kerSeg_fro.RData"))
+#save(gSeg_net, file = paste0("real_data/results/trade_gSeg_net.RData"))
+#save(gSeg_fro, file = paste0("real_data/results/trade_gSeg_fro.RData"))
 
 

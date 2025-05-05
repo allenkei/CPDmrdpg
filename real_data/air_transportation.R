@@ -3,6 +3,7 @@ library(rTensor)
 source("SBS.R")
 source("CUSUM.R")
 source("competitor.R")
+source("CI.R")
 
 
 
@@ -26,7 +27,7 @@ data_whole_16$MONTH  = 201600 + data_whole_16$MONTH
 data_whole_15 = read.csv(paste(c(path, "Air Transportation_2015.csv"), collapse =  ""), header = T) 
 data_whole_15$MONTH  = 201500 + data_whole_15$MONTH
 
-data_whole = rbind(data_whole_22,data_whole_21,  data_whole_20, data_whole_19, data_whole_18, data_whole_17, data_whole_16, data_whole_15)
+data_whole = rbind(data_whole_22,data_whole_21,data_whole_20,data_whole_19,data_whole_18,data_whole_17,data_whole_16,data_whole_15)
 #colnames(data_whole)
 
 AIRLINE_sort = rle(sort(data_whole[,1]))
@@ -58,7 +59,9 @@ de_id_100_nan = data_airport_id$Description[data_airport_id$Code %in%  de_id_100
 
 month_time = sort(unique(data_whole$MONTH))
 
-
+rm(data_whole_15,data_whole_16,data_whole_17,data_whole_18,data_whole_19,data_whole_20,
+   data_whole_21,data_whole_22,DEST_AIRPORT,ORIGIN_AIRPORT,DEST_AIRPORT_names,ORIGIN_AIRPORT_names,
+   AIRLINE_sort)
 
 
 n_1 = length(og_id_100)
@@ -138,12 +141,14 @@ output <- list()
 for (i in 1:(length(results_g)-1)) {
   detected_CP_g <- sort(results_g[[i+1]]$results[, 1])
   detected_CP_gl1 <- refinement1(detected_CP_g, A.tensor.even, B.tensor.odd, hat.rank)
+  CI <- construct_CI(alpha=0.05, detected_CP_gl1, A.tensor.even, B.tensor.odd, hat.rank)
   
   output[[i]] <- list()
   output[[i]]$threshold <- results_g[[i+1]]$threshold
   output[[i]]$thres_ratio <- rev(threshold_ratio)[i]
   output[[i]]$detected_CP <- 2*detected_CP_gl1
   output[[i]]$detected_month <- month_time[2*detected_CP_gl1]
+  output[[i]]$CI <- CI*2
   
 }
 
@@ -170,9 +175,9 @@ kerSeg_fro
 gSeg_net
 gSeg_fro
 
-save(output, file = paste0("real_data/results/AT_proposed.RData"))
-save(kerSeg_net, file = paste0("real_data/results/AT_kerSeg_net.RData"))
-save(kerSeg_fro, file = paste0("real_data/results/AT_kerSeg_fro.RData"))
-save(gSeg_net, file = paste0("real_data/results/AT_gSeg_net.RData"))
-save(gSeg_fro, file = paste0("real_data/results/AT_gSeg_fro.RData"))
+#save(output, file = paste0("real_data/results/AT_proposed.RData"))
+#save(kerSeg_net, file = paste0("real_data/results/AT_kerSeg_net.RData"))
+#save(kerSeg_fro, file = paste0("real_data/results/AT_kerSeg_fro.RData"))
+#save(gSeg_net, file = paste0("real_data/results/AT_gSeg_net.RData"))
+#save(gSeg_fro, file = paste0("real_data/results/AT_gSeg_fro.RData"))
 
