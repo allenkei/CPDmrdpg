@@ -1,8 +1,6 @@
 source("utility.R")
 
 
-
-# Kyles Generate function
 # f1: Directed Dirichlet, T = 150 (3 change points)
 # f2: Flip layers and change block numbers, T = 200 (5 change points) 
 # f3: Block size change, first layer only, change to T = 200 (3 change points 1-2-3-1)
