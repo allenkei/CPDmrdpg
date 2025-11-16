@@ -255,6 +255,10 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
 # Run all (random) #
 ####################
 
+# true_CP <- t(replicate(100, sort(1 + sample(198, 1, replace = FALSE))))
+# save(true_CP, file = paste0("results/generated_CP_f1.RData"))
+
+
 {
   true_CP <- numeric(0)
   timing_summary <- data.frame(
@@ -271,16 +275,17 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
     num_seq <- 10
     
     if (scenario == "f1") {
-      true_CP <- t(replicate(num_seq, sort(1 + sample(198, 2, replace = FALSE))))
-      
+      # true_CP <- t(replicate(num_seq, sort(1 + sample(198, 2, replace = FALSE))))
+      load("results/generated_CP_f1.RDATA")
     } else if (scenario == "f2") {
-      true_CP <- t(replicate(num_seq, sort(1 + sample(198, 5, replace = FALSE))))
+      # true_CP <- t(replicate(num_seq, sort(1 + sample(198, 5, replace = FALSE))))
+      load("results/generated_CP_f2.RDATA")
     } else {
       stop("Invalid scenario!\n
            For random generation, only f1 and f2 implemented")
     }
     
-    save(true_CP, file = paste0("results/generated_CP_", scenario, ".RData"))
+    # save(true_CP, file = paste0("results/generated_CP_", scenario, ".RData"))
     
     loc_start <- Sys.time()
     cat("\n==== Running scenario", scenario, "====\n")
@@ -350,7 +355,8 @@ summary_matrix
 # Analysis #
 ############
 # For single-threshold results (with coverage)
-load("results/coverage_f5_50.RData")
+load("results/coverage_f2_50_randNOT.RData")
+results <- results_NOT
 
 colMeans(results[[1]]) # Original 4 metrics
 results[[2]] # Coverage indicators
@@ -371,7 +377,6 @@ mean(results[[3]][results[[3]] != -1], na.rm = TRUE)
 
 # Median lengths per change point, filtering -1
 apply(results[[3]], 2, function(col) {median(col[col != -1], na.rm = TRUE)})
-
 
 
 # f1 100% overall, 
