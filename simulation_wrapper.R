@@ -260,7 +260,7 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
 
 
 {
-  true_CP <- numeric(0)
+  # true_CP <- numeric(0)
   timing_summary <- data.frame(
     scenario = character(),
     elapsed_minutes = numeric(),
@@ -272,7 +272,7 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
   for (scenario in c("f1","f2")) {
     
     num_node <- 50
-    num_seq <- 10
+    num_seq <- 100
     
     if (scenario == "f1") {
       # true_CP <- t(replicate(num_seq, sort(1 + sample(198, 2, replace = FALSE))))
