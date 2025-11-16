@@ -5,16 +5,18 @@ source("eval.R")
 source("gen_data.R")
 source("CI.R")
 
-
 simulate_sensitivity <- function(scenario, true_cp, num_node = 50, num_seq = 10) {
   # Simulate_sensitivity computes 4 metrics
   # For a range of thresholds
   # Returning a 3-way tensor
-  A.all_seq <- generate(scenario, num_node, 1, FALSE)
   
-  num_T <- dim(A.all_seq)[2] 
-  num_node <- dim(A.all_seq)[3] 
-  num_layer <- dim(A.all_seq)[5] 
+  true_cp_store <- true_cp
+  if (is.matrix(true_cp_store)) { true_cp <- as.numeric(true_cp_store[1, ])} 
+  temp <- generate(scenario, num_node, 1, FALSE)
+  
+  num_T <- dim(temp)[2] 
+  num_node <- dim(temp)[3] 
+  num_layer <- dim(temp)[5] 
   hat.rank <- c(15, 15, num_layer) # needed for model selection (Question: should be used as input to some FUNC)
   
   threshold_list <- rev(c(0.05, 0.08, 0.1, 0.12, 0.15, 0.2, 0.25) * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2))
@@ -30,7 +32,9 @@ simulate_sensitivity <- function(scenario, true_cp, num_node = 50, num_seq = 10)
     cat("\nIteration", seq_iter, "begin.\n")
     set.seed(seq_iter)
     # Generate Data 1-by-1
-    A.all_seq <- generate(scenario, num_node, 1, FALSE)
+    true_cp_store <- true_cp
+    if (is.matrix(true_cp_store)) { true_cp <- as.numeric(true_cp_store[seq_iter, ])} 
+    A.all_seq <- generate(scenario, true_cp, num_node, 1, FALSE)
     A.tensor <- A.all_seq[1,,,,] # a particular sequence with dim 150  50  50   4
     
     # splitting data in half
@@ -45,8 +49,8 @@ simulate_sensitivity <- function(scenario, true_cp, num_node = 50, num_seq = 10)
       detected_CP_g <- sort(results_g[[i+1]]$results[, 1])
       detected_CP_gl1 <- refinement1(detected_CP_g, A.tensor.even, B.tensor.odd, hat.rank)
       
-      output_holder_g[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_g, num_T))
-      output_holder_gl1[seq_iter, i, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP_gl1, num_T))
+      output_holder_g[seq_iter, i, ] <- as.numeric(eval_CP(true_cp, 2*detected_CP_g, num_T))
+      output_holder_gl1[seq_iter, i, ] <- as.numeric(eval_CP(true_cp, 2*detected_CP_gl1, num_T))
       
       cat("Threshold: ", threshold_list[i], "\n")
       cat("\tDetected Greedy CP  :", 2*detected_CP_g, "Metrics: ", output_holder_g[seq_iter, i, ], "\n")
@@ -69,11 +73,13 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
   # Simulate_coverage returns 4 metrics & interval coverage
   # For a single threshold
   # Returning a matrix
-  A.all_seq <- generate(scenario, num_node, 1, FALSE)
+  true_cp_store <- true_cp
+  if (is.matrix(true_cp_store)) { true_cp <- as.numeric(true_cp_store[1, ])} 
+  temp <- generate(scenario, true_cp, num_node, 1, FALSE)
   
-  num_T <- dim(A.all_seq)[2] 
-  num_node <- dim(A.all_seq)[3] 
-  num_layer <- dim(A.all_seq)[5] 
+  num_T <- dim(temp)[2] 
+  num_node <- dim(temp)[3] 
+  num_layer <- dim(temp)[5] 
   hat.rank <- c(15, 15, num_layer) # needed for model selection (Question: should be used as input to some FUNC)
   
   intervals <- construct_intervals(num_T/2, sqrt(1/2), 4)
@@ -82,13 +88,21 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
   coverage_holder <- array(NA, dim = c(num_seq, length(true_cp)))
   lengths_holder <- array(NA, dim = c(num_seq, length(true_cp)))
   
+  output_holder_NOT <- array(NA, dim = c(num_seq, 4))
+  coverage_holder_NOT <- array(NA, dim = c(num_seq, length(true_cp)))
+  lengths_holder_NOT <- array(NA, dim = c(num_seq, length(true_cp)))
+  
   # report mean of metric for all simulated sequences
   # can suppress print statements with verbose = FALSE (default TRUE)
   for(seq_iter in 1:num_seq) {
-    cat("\nIteration", seq_iter, "begin.\n")
+    cat("\nIteration", seq_iter, "begin.\n") 
     set.seed(seq_iter)
     # Generate Data 1-by-1
-    A.all_seq <- generate(scenario, num_node, 1, FALSE)
+    
+    if (is.matrix(true_cp_store)) { true_cp <- as.numeric(true_cp_store[seq_iter, ])} 
+    cat("True CP :", true_cp, "\n")
+    A.all_seq <- generate(scenario, true_cp, num_node, 1, FALSE)
+    
     A.tensor <- A.all_seq[1,,,,] # a particular sequence with dim 150  50  50   4
     
     # splitting data in half
@@ -96,11 +110,14 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
     B.tensor.odd  <- A.tensor[seq(1, num_T-1, by = 2), , , ] # named as B.tensor
     
     gains <- cusum_on_intervals(CUSUM_step1, A.tensor.even, verbose = FALSE, intervals, obj.B = B.tensor.odd)
+    
+    # Greedy Selection
+    
     results_g <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = gains, verbose = FALSE,
                                    threshold = threshold_C * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2), 
                                    method = "Greedy", obj.B = B.tensor.odd)
     detected_CP <- refinement1(sort(results_g[[2]]$results[, 1]), A.tensor.even, B.tensor.odd, hat.rank)
-    output_holder[seq_iter, ] <- as.numeric(eval_CP(true_CP, 2*detected_CP, num_T))
+    output_holder[seq_iter, ] <- as.numeric(eval_CP(true_cp, 2*detected_CP, num_T))
     cat("\tDetected Greedy CP  :", 2*detected_CP, "Metrics: ", output_holder[seq_iter, ], "\n")
     
     
@@ -110,23 +127,51 @@ simulate_coverage <- function(scenario, true_cp, num_node = 50, num_seq = 10,
     lengths_holder[seq_iter, ] <- coverage_out$lengths
     cat("\tRefined (Coverage) CP :", 2*CI[, 2], "Coverage: ", coverage_holder[seq_iter, ], 
         "Lengths: ", lengths_holder[seq_iter, ],"\n")
+    
+    # NOT Selection
+    results_NOT <- seeded_binary_seg(CUSUM_step1, A.tensor.even, num_T/2, CUSUM_res = gains, verbose = FALSE,
+                                     threshold = threshold_C * num_node*sqrt(num_layer)*(log(num_T/2))^(3/2), 
+                                     method = "Narrowest", obj.B = B.tensor.odd)
+    detected_CP_NOT <- refinement1(sort(results_NOT[[2]]$results[, 1]), A.tensor.even, B.tensor.odd, hat.rank)
+    output_holder_NOT[seq_iter, ] <- as.numeric(eval_CP(true_cp, 2*detected_CP_NOT, num_T))
+    cat("\tDetected NOT CP  :", 2*detected_CP_NOT, "Metrics: ", output_holder_NOT[seq_iter, ], "\n")
+    
+    
+    CI_NOT <- construct_CI(alpha, detected_CP_NOT, A.tensor.even, B.tensor.odd, hat.rank)
+    coverage_out_NOT <- coverage(true_cp, CI_NOT[, 2]*2, CI_NOT[, 3]*2, CI_NOT[, 4]*2)
+    coverage_holder_NOT[seq_iter, ] <- coverage_out_NOT$covered
+    lengths_holder_NOT[seq_iter, ] <- coverage_out_NOT$lengths
+    cat("\tRefined (Coverage) CP :", 2*CI_NOT[, 2], "Coverage: ", coverage_holder_NOT[seq_iter, ], 
+        "Lengths: ", lengths_holder_NOT[seq_iter, ],"\n")
+    
+    
   }
   
+  rand <- ifelse(is.matrix(true_cp_store), "_rand", "")
+
   results <- output_holder
   results <- list(
     output_holder,
     coverage_holder,
     lengths_holder
   )
-  save(results, file = paste0("results/coverage_", scenario, "_", num_node, ".RData"))
+  save(results, file = paste0("results/coverage_", scenario, "_", num_node, rand, ".RData"))
+  
+  results_NOT <- output_holder_NOT
+  results_NOT <- list(
+    output_holder_NOT,
+    coverage_holder_NOT,
+    lengths_holder_NOT
+  )
+  save(results_NOT, file = paste0("results/coverage_", scenario, "_", num_node, rand, "NOT.RData"))
   
   return(results)
 }
- 
+
+
 ###########
 # Run one #
 ###########
-
 scenario <- "f1" # f1, f2, f3, f4, f5, f6
 if (scenario == "f1") {
   true_CP <- c(70, 140)
@@ -153,7 +198,6 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
 ###########
 # Run all #
 ###########
-
 
 {
   timing_summary <- data.frame(
@@ -184,6 +228,59 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
     } else {
       stop("Invalid scenario!")
     }
+    
+    loc_start <- Sys.time()
+    cat("\n==== Running scenario", scenario, "====\n")
+    cat("Start time:", format(loc_start), "\n")
+    
+    # results <- simulate_sensitivity(scenario, true_CP, num_node, num_seq)
+    results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
+    
+    end_time <- Sys.time()
+    elapsed <- difftime(end_time, loc_start, units = "mins")
+    cat("\nEnd time:", format(end_time), "\n")
+    cat("Elapsed time:", round(elapsed, 2), "minutes\n")
+    
+    # Log timing
+    timing_summary <- rbind(
+      timing_summary,
+      data.frame(scenario = scenario, elapsed_minutes = round(as.numeric(elapsed), 2))
+    )
+  }
+  
+  timing_summary
+}
+
+####################
+# Run all (random) #
+####################
+
+{
+  true_CP <- numeric(0)
+  timing_summary <- data.frame(
+    scenario = character(),
+    elapsed_minutes = numeric(),
+    stringsAsFactors = FALSE
+  )
+  
+  start_time <- Sys.time()
+  cat("Start time:", format(start_time), "\n")
+  for (scenario in c("f1","f2")) {
+    
+    num_node <- 50
+    num_seq <- 10
+    
+    if (scenario == "f1") {
+      true_CP <- t(replicate(num_seq, sort(1 + sample(198, 2, replace = FALSE))))
+      
+    } else if (scenario == "f2") {
+      true_CP <- t(replicate(num_seq, sort(1 + sample(198, 5, replace = FALSE))))
+    } else {
+      stop("Invalid scenario!\n
+           For random generation, only f1 and f2 implemented")
+    }
+    
+    save(true_CP, file = paste0("results/generated_CP_", scenario, ".RData"))
     
     loc_start <- Sys.time()
     cat("\n==== Running scenario", scenario, "====\n")

@@ -8,15 +8,20 @@ source("utility.R")
 # f5: Sparsity, weak difference, T = 200 (3 change points 1-2-3-1)
 # f6: No change, T = 200
 
+# params <- get_dirichlet_params(50, 50, 4, 5)
+# test <- get_data_cp_dirichlet(200, c(121, 122), 50, 50, 4, 
+#                               params[[1]], params[[2]], params[[3]], W_2 <- params[[4]], 
+#                               directed = TRUE)
 
-generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
+
+generate <- function(scenario, cp_truth, num_node = 50, num_seq = 1, save = FALSE) {
   
   num_time <- 200
   num_layer <- 4
   
   if(scenario == "f1"){
+    if (length(cp_truth) != 2) {stop("f1 needs 2 changepoints")}
     
-    cp_truth <- c(70, 140)
     d <- 5
     
     A.all_seq <- array(NA, c(num_seq, num_time, num_node, num_node, num_layer)) # i.e. 10 sequences empty
@@ -35,6 +40,8 @@ generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
   } else if(scenario == "f2"){
     # Old Scenario 3b
     # COMBINE s1 and s2 WITH LONGER TIME SPAN
+    
+    if (length(cp_truth) != 5) {stop("f2 needs 5 changepoints")}
     
     # BLOCK NUMBER K CHANGED
     num_block_before_K <- 4 # different
@@ -63,12 +70,12 @@ generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
       
       A.tensor <- array(NA, c(num_time, num_node, num_node, num_layer)) # 1 sequence
       
-      for(t_iter in 1:20) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
-      for(t_iter in 21:60) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_2)
-      for(t_iter in 61:80) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_2)
-      for(t_iter in 81:160) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_1)
-      for(t_iter in 161:180) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_2)
-      for(t_iter in 181:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
+      for(t_iter in (1):cp_truth[1]) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
+      for(t_iter in (cp_truth[1] + 1):cp_truth[2]) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_2)
+      for(t_iter in (cp_truth[2] + 1):cp_truth[3]) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_2)
+      for(t_iter in (cp_truth[3] + 1):cp_truth[4]) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_L_1)
+      for(t_iter in (cp_truth[4] + 1):cp_truth[5]) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_2)
+      for(t_iter in (cp_truth[5] + 1):200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_K_1)
       
       # c(20, 60, 80, 160, 180)
       
@@ -76,6 +83,8 @@ generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
     }; rm(seq_iter, A.tensor)
     
   }else if(scenario == "f3"){
+    if (length(cp_truth) != 3) {stop("f4 needs 3 changepoints")}
+    
     # Old Scenario 6, extended
     block_size1 <- floor(c(3, 4, 3) / 10 * num_node) # fixed ratio
     block_size2 <- floor(c(4, 3, 3) / 10 * num_node) # fixed ratio
@@ -95,15 +104,17 @@ generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
       A.tensor <- array(NA, c(num_time, num_node, num_node, num_layer)) # 1 sequence
       
       # T from 1 to 150 (otherwise change the for loop)
-      for(t_iter in 1:50) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
-      for(t_iter in 51:100) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
-      for(t_iter in 101:150) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
-      for(t_iter in 151:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+      for(t_iter in (1):cp_truth[2]) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+      for(t_iter in (cp_truth[1] + 1):cp_truth[2]) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
+      for(t_iter in (cp_truth[2] + 1):cp_truth[3]) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
+      for(t_iter in (cp_truth[3] + 1):200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
       
       A.all_seq[seq_iter,,,,] <- A.tensor
     }; rm(seq_iter, A.tensor)
     
   } else if(scenario == "f4"){
+    
+    if (length(cp_truth) != 5) {stop("f4 needs 5 changepoints")}
     # Old Scenario 8b
     epsilon <- 0.1
     
@@ -119,19 +130,19 @@ generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
       
       A.tensor <- array(NA, c(num_time, num_node, num_node, num_layer)) # 1 sequence
       
-      # T from 1 to 150 (otherwise change the for loop)
-      for(t_iter in 1:20) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
-      for(t_iter in 21:60) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
-      for(t_iter in 61:80) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
-      for(t_iter in 81:160) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
-      for(t_iter in 161:180) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
-      for(t_iter in 181:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
+      for(t_iter in (1):cp_truth[1]) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+      for(t_iter in (cp_truth[1] + 1):cp_truth[2]) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
+      for(t_iter in (cp_truth[2] + 1):cp_truth[3]) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
+      for(t_iter in (cp_truth[3] + 1):cp_truth[4]) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
+      for(t_iter in (cp_truth[4] + 1):cp_truth[5]) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+      for(t_iter in (cp_truth[5] + 1):200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
       
       # c(20, 60, 80, 160, 180)
       A.all_seq[seq_iter,,,,] <- A.tensor
     }; rm(seq_iter, A.tensor)
     
   } else if(scenario == "f5") {
+    if (length(cp_truth) != 3) {stop("f5 needs 3 changepoints")}
     # Old Scenario 8, extended
     epsilon <- 0.05
     
@@ -147,11 +158,10 @@ generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
       
       A.tensor <- array(NA, c(num_time, num_node, num_node, num_layer)) # 1 sequence
       
-      # T from 1 to 150 (otherwise change the for loop)
-      for(t_iter in 1:50) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
-      for(t_iter in 51:100) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
-      for(t_iter in 101:150) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
-      for(t_iter in 151:200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+      for(t_iter in (1):cp_truth[2]) A.tensor[t_iter,,,]    <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
+      for(t_iter in (cp_truth[1] + 1):cp_truth[2]) A.tensor[t_iter,,,]  <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_2)
+      for(t_iter in (cp_truth[2] + 1):cp_truth[3]) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_3)
+      for(t_iter in (cp_truth[3] + 1):200) A.tensor[t_iter,,,] <- generate_tensor_probability_directed(n_1=num_node, n_2=num_node, L=num_layer, probability_1)
       
       A.all_seq[seq_iter,,,,] <- A.tensor
     }; rm(seq_iter, A.tensor)
@@ -182,9 +192,6 @@ generate <- function(scenario, num_node = 50, num_seq = 1, save = FALSE) {
   if (save == TRUE) {save(A.all_seq, file = paste0("data/seq",num_seq,"n",num_node,scenario,".RData"))}
   return(A.all_seq)
 }
-
-
-
 
 
 

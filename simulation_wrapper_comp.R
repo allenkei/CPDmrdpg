@@ -14,8 +14,10 @@ source("competitor.R")
 
 simulate_scenario_competitor <- function(scenario, true_cp, num_node, num_seq, competitor) {
   # competitor: kerSeg_net, kerSeg_fro, gSeg_net, gSeg_fro
+  true_cp_store <- true_cp
+  if (is.matrix(true_cp_store)) { true_cp <- as.numeric(true_cp_store[1, ])} 
+  temp <- generate(scenario, true_cp, num_node, 1, FALSE)
   
-  temp <- generate(scenario, num_node, 1, FALSE)
   num_time <- dim(temp)[2]; num_layer <- dim(temp)[5]; rm(temp)
   
   results <- matrix(NA, nrow = num_seq, ncol = 4) # 4 metrics
@@ -26,7 +28,11 @@ simulate_scenario_competitor <- function(scenario, true_cp, num_node, num_seq, c
     set.seed(seq_iter)
     cat("\nIteration", seq_iter, "begin.\n")
     
-    A.all_seq <- generate(scenario, num_node, 1, FALSE) # (1,200,50,50,4) # NOTE the first dim = 1
+    true_cp_store <- true_cp
+    if (!is.null(nrow(true_cp_store))) {
+      true_cp <- true_cp_store[seq_iter, ]
+    } 
+    A.all_seq <- generate(scenario, true_cp, num_node, 1, FALSE) # (1,200,50,50,4) # NOTE the first dim = 1
     
     if(competitor == "kerSeg_net"){
       results[seq_iter,] <- Evaluation_kerSeg(A.all_seq, p_threshold=0.05, is_experiment=FALSE, true_cp, competitor)
