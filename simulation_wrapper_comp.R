@@ -28,10 +28,8 @@ simulate_scenario_competitor <- function(scenario, true_cp, num_node, num_seq, c
     set.seed(seq_iter)
     cat("\nIteration", seq_iter, "begin.\n")
     
-    true_cp_store <- true_cp
-    if (!is.null(nrow(true_cp_store))) {
-      true_cp <- true_cp_store[seq_iter, ]
-    } 
+
+    if (is.matrix(true_cp_store)) { true_cp <- as.numeric(true_cp_store[seq_iter, ])} 
     A.all_seq <- generate(scenario, true_cp, num_node, 1, FALSE) # (1,200,50,50,4) # NOTE the first dim = 1
     
     if(competitor == "kerSeg_net"){

@@ -255,9 +255,8 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
 # Run all (random) #
 ####################
 
-# true_CP <- t(replicate(100, sort(1 + sample(198, 1, replace = FALSE))))
-# save(true_CP, file = paste0("results/generated_CP_f1.RData"))
-
+# true_CP <- t(replicate(100, sort(1 + sample(198, 5, replace = FALSE))))
+# save(true_CP, file = paste0("results/generated_CP_f2.RData"))
 
 {
   # true_CP <- numeric(0)
@@ -271,15 +270,15 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
   cat("Start time:", format(start_time), "\n")
   for (scenario in c("f1","f2")) {
     
-    num_node <- 50
+    # num_node <- 50 # Looping over both
     num_seq <- 100
     
     if (scenario == "f1") {
       # true_CP <- t(replicate(num_seq, sort(1 + sample(198, 2, replace = FALSE))))
-      load("results/generated_CP_f1.RDATA")
+      load("results/generated_CP_f1.Rdata")
     } else if (scenario == "f2") {
       # true_CP <- t(replicate(num_seq, sort(1 + sample(198, 5, replace = FALSE))))
-      load("results/generated_CP_f2.RDATA")
+      load("results/generated_CP_f2.Rdata")
     } else {
       stop("Invalid scenario!\n
            For random generation, only f1 and f2 implemented")
@@ -291,8 +290,11 @@ results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
     cat("\n==== Running scenario", scenario, "====\n")
     cat("Start time:", format(loc_start), "\n")
     
+    for (num_node in c(50, 100)) {
+      results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
+    }
     # results <- simulate_sensitivity(scenario, true_CP, num_node, num_seq)
-    results <- simulate_coverage(scenario, true_CP, num_node, num_seq)
+    
     
     end_time <- Sys.time()
     elapsed <- difftime(end_time, loc_start, units = "mins")
@@ -355,8 +357,8 @@ summary_matrix
 # Analysis #
 ############
 # For single-threshold results (with coverage)
-load("results/coverage_f2_50_randNOT.RData")
-results <- results_NOT
+load("results/coverage_f2_100_randNOT.RData")
+results <- results_NOT # if reading in NOT dataset
 
 colMeans(results[[1]]) # Original 4 metrics
 results[[2]] # Coverage indicators
